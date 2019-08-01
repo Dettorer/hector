@@ -2,7 +2,7 @@ module.exports = {
     name: 'help',
     description: 'command manual',
     usage: 'help <commande>',
-    help: 'affiche un message à carractère informatif sur la commande, ainsi que la façon dont on l\'utilise.',
+    help: 'Affiche un message à carractère informatif sur la commande, ainsi que la façon dont on l\'utilise.',
     execute(message, args, client) {
         // If no argument is given, give the list of available commands
         if (!args.length) {
@@ -26,9 +26,12 @@ module.exports = {
 
         // Print the command's usage, then its help.
         if (command.usage) {
-            message.channel.send(`${client.config.prefix}${command.usage}`);
+            message.channel.send(`usage : ${client.config.prefix}${command.usage}`);
+            message.channel.send('(note : des crochets "[]" signifient qu\'un paramètre est optionel, des chevrons "<>" signifie qu\'il faut remplacer cette partie par quelque chose, sans garder les chevrons)');
         }
         if (command.help) {
+            message.channel.send('.');
+            message.channel.send('Description :')
             message.channel.send(command.help);
         }
     },

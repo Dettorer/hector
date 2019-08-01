@@ -3,7 +3,7 @@ A [discord.js](https://discord.js.org) bot that (will) implement little board
 games (only speaks french as of today)
 
 # Usage
-This bot needs the [discord.js](https://discord.js.org) library :
+This bot needs the [discord.js](https://discord.js.org) library:
 
 ```
 $ npm install discord.js
