@@ -59,3 +59,9 @@ typings/
 
 # next.js build output
 .next
+
+# bot's config file
+config.json
+
+# npm package locking file
+package-lock.json
