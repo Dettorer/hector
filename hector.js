@@ -154,6 +154,12 @@ class Client extends Discord.Client {
             command = this.game_commands.get(commandName);
         }
 
+        if (args.length < command.minArgs) {
+            this.bufferizeText("il manque un ou plusieurs paramètre");
+            this.bufferizeText(`usage : \`${command.usage}\``)
+
+            return message.reply(this.flushBufferToString());
+        }
         command.execute(message, args, this);
     }
 

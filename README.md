@@ -40,6 +40,7 @@ module.exports = {
     name: '<name of the command>', // it's what users will type after the command prefix to invoke your command
     description: '<short description>', // will be displayed when listing commands
     usage: '<usage>', // will be displayed by the `help` command
+    minArgs: <count>, // number of mandatory arguments for this command
     help: '<optional notes, remarks or further help>', // will be displayed by the `help` command
     execute(message, args, client) {
         // Your code to handle the command

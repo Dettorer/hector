@@ -32,6 +32,7 @@ module.exports = {
     name: 'help',
     description: 'liste les commandes ou affiche leur aide et leur usage',
     usage: 'help [<commande>]',
+    minArgs: 0,
     help: 'note : dans les usages, des crochets "[]" signifient qu\'un paramètre est optionel, des chevrons "<>" signifie qu\'il faut remplacer cette partie par quelque chose, sans garder les chevrons',
     execute(message, args, client) {
         // If no argument is given, give the list of available commands

@@ -2,6 +2,7 @@ module.exports = {
     name: "list_games",
     description: "liste les jeux disponibles",
     usage: "list_games",
+    minArgs: 0,
     help: "",
     execute(message, args, client) {
         for (var game of client.available_games.array()) {
