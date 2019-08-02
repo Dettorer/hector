@@ -1,5 +1,5 @@
-const Discord = require('discord.js');
-const fs = require('fs');
+const Discord = require("discord.js");
+const fs = require("fs");
 
 class Client extends Discord.Client {
     /**
@@ -29,15 +29,9 @@ class Client extends Discord.Client {
         // Load the configuration
         this.config = require(configPath);
 
-        // Load the general purpose commands if a path for it was given
-        if (commandsPath) {
-            this.registerCommands(commandsPath);
-        }
-
-        // Load the available games if a path for it was given
-        if (gamesPath) {
-            this.registerGames(gamesPath);
-        }
+        // Load the general purpose commands and available games
+        this.registerCommands(this.config.commandsPath);
+        this.registerGames(this.config.gamesPath);
 
         this.setHooks();
     }
@@ -45,11 +39,11 @@ class Client extends Discord.Client {
     /** Set "ready" and "message" hooks */
     setHooks() {
         // When the bot is ready, log it.
-        this.once('ready', () => {
-            console.log('Ready!');
+        this.once("ready", () => {
+            console.log("Ready!");
         });
 
-        this.on('message', message => {
+        this.on("message", message => {
             // Ignore the message if not in the correct channel
             if (message.channel.name !== this.config.channel) {
                 return;
@@ -73,11 +67,11 @@ class Client extends Discord.Client {
     /**
      * Find the general purpose bot commands and register their handler in the client (indexed by the command's name, without the command prefix).
      *
-     * @param {String} path - the path in which we'll search for commands to load. If it's relative to the working directory, it must start with './'
+     * @param {String} path - the path in which we'll search for commands to load. If it's relative to the working directory, it must start with "./"
      * @param {Boolean} [game = false] - weather these commands are specific to the current loaded game or not
      */
     registerCommands(path, game=false) {
-        const commandFiles = fs.readdirSync(`${path}`).filter(file => file.endsWith('.js'));
+        const commandFiles = fs.readdirSync(`${path}`).filter(file => file.endsWith(".js"));
         for (const file of commandFiles) {
             const command = require(`${path}/${file}`);
 
@@ -109,7 +103,7 @@ class Client extends Discord.Client {
      */
     unloadGame(message = null) {
         if (!this.game) { // No game is loaded
-            return console.log('Warning: no game was loaded but unloadGame was called')
+            return console.log("Warning: no game was loaded but unloadGame was called")
         }
 
         console.log(`unloading the game "${this.game.name}`)
@@ -121,7 +115,7 @@ class Client extends Discord.Client {
     /**
      * Find the available games and register their handler in the client (indexed by the game's name).
      *
-     * @param {String} path - the path in which we'll search for games to register. If it's relative to the working directory, it must start with './'
+     * @param {String} path - the path in which we'll search for games to register. If it's relative to the working directory, it must start with "./"
      */
     registerGames(path) {
         const gameDirs = fs.readdirSync(`${path}`, {withFileTypes: true}).filter(dirent => dirent.isDirectory());

@@ -1,5 +1,7 @@
 {
-        "token": "<a valid discord API token>",
-	"prefix": "!",
-        "channel": "<name of the channel hector should watch>"
+    "token": "<a valid discord API token>",
+    "prefix": "!",
+    "channel": "<name of the channel hector should watch>"
+    "commandsPath": "./commands",
+    "gamesPath": "./games"
 }
