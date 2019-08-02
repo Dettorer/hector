@@ -23,6 +23,9 @@ class Client extends Discord.Client {
         this.available_games = new Discord.Collection();
         this.game = null;
 
+        // Buffer for `bufferizeText`, `flushBufferToString` and `flushBufferToRichEmbed`
+        this.textBuffer = "";
+
         // Load the configuration
         this.config = require(configPath);
 
@@ -152,6 +155,35 @@ class Client extends Discord.Client {
         }
 
         command.execute(message, args, this);
+    }
+
+    /**
+     * Save some text to form a sendable message for later
+     *
+     * @param {String} text
+     */
+    bufferizeText(text) {
+        this.textBuffer += text + "\n";
+    }
+
+    /** Get the content of the text buffer in a string and reset it */
+    flushBufferToString() {
+        const text = this.textBuffer;
+        this.textBuffer = "";
+
+        return text;
+    }
+
+    /** Get the content of the text buffer in a new `Discord.richEmbed` and reset it */
+    flushBufferToEmbed() {
+        // Create the embed and fill its content with our buffer
+        var embed = new Discord.RichEmbed();
+        embed.setDescription(this.textBuffer);
+
+        // reset the buffer
+        this.textBuffer = "";
+
+        return embed;
     }
 
     /** Log in to discord */
