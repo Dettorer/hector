@@ -70,7 +70,7 @@ class Client extends Discord.Client {
 
     /** Clean up a raw command and dispatch it to the correct handler
      *
-     * @param {String} message
+     * @param {Discord.Message} message
     */
     handleCommand(message) {
         // Isolate the command name (lowercased) and it's argument (in an array)

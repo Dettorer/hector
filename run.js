@@ -1,4 +1,3 @@
-const Discord = require('discord.js')
 const Hector = require('./hector.js');
 
 if (require.main === module) {
