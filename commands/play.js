@@ -1,7 +1,7 @@
 module.exports = {
     name: "play",
     description: "lance une partie du jeu demandé",
-    usage: "play <jeu>",
+    usage: "<jeu>",
     minArgs: 1,
     help: "",
     execute(message, args, client) {

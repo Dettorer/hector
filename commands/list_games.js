@@ -1,7 +1,7 @@
 module.exports = {
     name: "list_games",
     description: "liste les jeux disponibles",
-    usage: "list_games",
+    usage: "",
     minArgs: 0,
     help: "",
     execute(message, args, client) {

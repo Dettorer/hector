@@ -126,6 +126,15 @@ class Client extends Discord.Client {
         }
     }
 
+    getCommandUsage(command) {
+        var usage = `${this.config.prefix}${command.name}`;
+        if (command.usage != "") {
+            usage += ` ${command.usage}`;
+        }
+
+        return usage;
+    }
+
     /** Clean up a raw command and dispatch it to the correct handler
      *
      * @param {Discord.Message} message
@@ -150,7 +159,7 @@ class Client extends Discord.Client {
 
         if (args.length < command.minArgs) {
             this.bufferizeText("il manque un ou plusieurs paramètre");
-            this.bufferizeText(`usage : \`${command.usage}\``)
+            this.bufferizeText(`usage : \`${this.getCommandUsage(command)}\``)
 
             return message.reply(this.flushBufferToString());
         }

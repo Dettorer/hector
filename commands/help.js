@@ -29,11 +29,11 @@ function listCommands(client, channel) {
 }
 
 module.exports = {
-    name: 'help',
-    description: 'liste les commandes ou affiche leur aide et leur usage',
-    usage: 'help [<commande>]',
+    name: "help",
+    description: "liste les commandes ou affiche leur aide et leur usage",
+    usage: "[<commande>]",
     minArgs: 0,
-    help: 'note : dans les usages, des crochets "[]" signifient qu\'un paramètre est optionel, des chevrons "<>" signifie qu\'il faut remplacer cette partie par quelque chose, sans garder les chevrons',
+    help: "note : dans les usages, des crochets \"[]\" signifient qu'un paramètre est optionel, des chevrons \"<>\" signifie qu'il faut remplacer cette partie par quelque chose, sans garder les chevrons",
     execute(message, args, client) {
         // If no argument is given, give the list of available commands
         if (!args.length) {
@@ -59,14 +59,10 @@ module.exports = {
         }
 
         // Print the command's usage, then its short description and its help.
-        if (command.usage) {
-            client.bufferizeText(`**usage :** \`${client.config.prefix}${command.usage}\``);
-        }
-        if (command.description) {
-            client.bufferizeText(command.description)
-        }
-        if (command.help) {
-            client.bufferizeText('');
+        client.bufferizeText(`**usage :** \`${client.getCommandUsage(command)}\``);
+        client.bufferizeText(command.description);
+        if (command.help != "") {
+            client.bufferizeText("");
             client.bufferizeText(command.help);
         }
 

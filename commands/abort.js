@@ -1,7 +1,7 @@
 module.exports = {
     name: "abort",
     description: "annule et termine la partie en cours",
-    usage: "abort",
+    usage: "",
     minArgs: 0,
     help: "",
     execute(message, args, client) {
