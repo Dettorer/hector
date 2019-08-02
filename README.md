@@ -25,3 +25,52 @@ You can then launch the `run.js` file with nodejs, for example in a terminal on 
 ```
 $ node run.js
 ```
+
+# Development
+## Add a command
+
+To add a command, create a `.js` file of your choice in the `commands` folder of
+the project's folder (for general purpose commands available at any time) or in
+the `commands` folder of a game (for commands specific to that game).
+
+This file must export the following symbols:
+
+```javascript
+module.exports = {
+    name: '<name of the command>', // it's what users will type after the command prefix to invoke your command
+    description: '<short description>', // will be displayed when listing commands
+    usage: '<usage>', // will be displayed by the `help` command
+    help: '<optional notes, remarks or further help>', // will be displayed by the `help` command
+    execute(message, args, client) {
+        // Your code to handle the command
+    },
+};
+```
+
+Given to the `execute` function are:
+
+- `message`, the [`Discord.Message`](https://discord.js.org/#/docs/main/stable/class/Message) that invoked the command;
+- `args`, a `Array<String>` containing the arguments the user gave;
+- `client`, a `Hector.Client` object, extending [`Discord.Client`](https://discord.js.org/#/docs/main/stable/class/Client), see discord.js' documentation and `hector.js` file for available methods.
+
+## Add a game
+
+To add a game, you need to create a folder in the `games` folder containing at
+least the following:
+
+- a `commands` folder in which you'll add commands as described above;
+- a `game.js` file.
+
+The `game.js` file must export the following symbols:
+
+```javascript
+module.exports = {
+    short_name: '<name>', // used to identify the game both internally and by users to launch a game
+    name: '<full name>', // more elaborate name used when listing games or speaking about it
+    short_description: '<description>', // used when listing games
+    path: '<path>', // path to the game folder (where `game.js` file and `commands` folder are)
+    load: load, // a function that will be invoked when loading the game to let you prepare any stuff you need before it starts
+    unload: unload, // a function that will be invoked when stopping the game to let you clean up any stuff you may have added do `client`
+    play: play // the function that will be invoked when the game should start
+};
+```
