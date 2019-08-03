@@ -48,7 +48,7 @@ class Client extends Discord.Client {
 
         this.on("message", message => {
             // Ignore the message if not in the correct channel, or a private message
-            if (message.channel.type !== "dm" && message.channel.name !== this.config.channel) {
+            if (message.channel.type !== "dm" && message.channel.id !== this.config.channel) {
                 return;
             }
 
