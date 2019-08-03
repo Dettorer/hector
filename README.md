@@ -33,15 +33,26 @@ To add a command, create a `.js` file of your choice in the `commands` folder of
 the project's folder (for general purpose commands available at any time) or in
 the `commands` folder of a game (for commands specific to that game).
 
-This file must export the following symbols:
+This file must export some symbols as described in the following template:
 
 ```javascript
+const Hector = require("hector.js");
+const Discord = require("discord.js");
+
 module.exports = {
     name: '<name of the command>', // it's what users will type after the command prefix to invoke your command
     description: '<short description>', // will be displayed when listing commands
     usage: '<usage>', // will be displayed by the `help` command
     minArgs: <count>, // number of mandatory arguments for this command
     help: '<optional notes, remarks or further help>', // will be displayed by the `help` command
+
+    /**
+     * Handle the command
+     *
+     * @param {Hector.Client} client - the bot object
+     * @param {Discord.Message} message - the user message that invoked the command
+     * @param {Array<String>} args - the arguments the user gave to the command
+     */
     execute(message, args, client) {
         // Your code to handle the command
     },

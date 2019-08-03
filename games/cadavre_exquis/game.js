@@ -1,3 +1,6 @@
+const Hector = require("../../hector.js");
+const Discord = require("discord.js");
+
 /**
  * Initialize needed data for the game
  *

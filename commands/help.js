@@ -1,8 +1,11 @@
+const Hector = require("../hector.js");
+const Discord = require("discord.js");
+
 /**
  * Write a list of available commands on the given channel
  *
  * @param {Hector.Client} client
- * @param {Discord.Channel} channel
+ * @param {Discord.TextChannel} channel
  */
 function listCommands(client, channel) {
     // Bufferize general commands
