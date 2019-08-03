@@ -1,0 +1,29 @@
+{
+    "name": "Hector",
+    "version": "1.0.0-alpha",
+    "description": "A discord.js bot that (will) implement little board games (only speaks french as of today)",
+    "license": "AGPL-3.0-or-later",
+    "keywords": [
+        "discord",
+        "bot",
+        "game"
+    ],
+    "homepage": "https://github.com/Dettorer/hector#readme",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Dettorer/hector.git"
+    },
+    "bugs": "https://github.com/Dettorer/hector/issues",
+    "author": {
+        "name": "Paul Hervot"
+    },
+    "type": "module",
+    "main": "./hector.js",
+    "bin": "./hector.js",
+    "dependencies": {
+        "discord.js": "^11.5.1"
+    },
+    "scripts": {
+        "start": "node ."
+    }
+}
