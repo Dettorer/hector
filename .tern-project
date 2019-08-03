@@ -3,6 +3,6 @@
     "node": {}
   }
   "libs": [
-    "discord"
+    "discord.js"
     ]
 }
