@@ -105,6 +105,7 @@ class Client extends Discord.Client {
         console.log(`loading the game "${this.game.name}`);
         this.registerCommands(`${this.game.path}/commands`, true);
         this.game.load(this, message);
+        message.channel.send(`J'ouvre le jeu "${this.game.name}" !`)
     }
 
     /**
@@ -118,6 +119,7 @@ class Client extends Discord.Client {
         }
 
         console.log(`unloading the game "${this.game.name}`)
+        message.channel.send(`Je ferme le jeu "${this.game.name}"`)
         this.game.unload(message);
         this.game = null;
         this.game_commands = new Discord.Collection();

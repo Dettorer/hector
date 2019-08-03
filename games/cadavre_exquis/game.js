@@ -16,7 +16,6 @@ function load(client, message = null) {
  * @param {Discord.Message} message - the message that made the bot start that game, if available
  */
 function unload(message = null) {
-    message.channel.send("J'arrête la partie")
 }
 
 /**
