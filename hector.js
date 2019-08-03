@@ -90,7 +90,7 @@ class Client extends Discord.Client {
      * Set up a game
      *
      * @param {String} gameName - the name of the game
-     * @param {Discord.Messag} message - the message that prompted the loading of that game, if available
+     * @param {Discord.Message} message - the message that prompted the loading of that game, if available
      */
     loadGame(gameName, message = null) {
         this.game = this.available_games.get(gameName);
@@ -102,7 +102,7 @@ class Client extends Discord.Client {
     /**
      * Get rid of the game setup
      *
-     * @param {Discord.Messag} message - the message that prompted the loading of that game, if available
+     * @param {Discord.Message} message - the message that prompted the loading of that game, if available
      */
     unloadGame(message = null) {
         if (!this.game) { // No game is loaded
