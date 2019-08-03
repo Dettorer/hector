@@ -205,3 +205,10 @@ class Client extends Discord.Client {
 }
 
 module.exports.Client = Client;
+
+// @ts-ignore (vscode thinks this condition will always return false, which isn't the case if the file is directly given to node)
+if (require.main === module) {
+    var client = new Client("./config.json");
+
+    client.run();
+}
