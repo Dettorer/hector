@@ -81,8 +81,9 @@ module.exports = {
     name: '<full name>', // more elaborate name used when listing games or speaking about it
     short_description: '<description>', // used when listing games
     path: '<path>', // path to the game folder (where `game.js` file and `commands` folder are)
+    handleDM: handleDM, // the function that will be called when the client recieves a private message
     load: load, // a function that will be invoked when loading the game to let you prepare any stuff you need before it starts
-    unload: unload, // a function that will be invoked when stopping the game to let you clean up any stuff you may have added do `client`
+    unload: unload // a function that will be invoked when stopping the game to let you clean up any stuff you may have added do `client`
 };
 ```
 

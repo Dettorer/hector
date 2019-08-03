@@ -47,8 +47,8 @@ class Client extends Discord.Client {
         });
 
         this.on("message", message => {
-            // Ignore the message if not in the correct channel
-            if (message.channel.name !== this.config.channel) {
+            // Ignore the message if not in the correct channel, or a private message
+            if (message.channel.type !== "dm" && message.channel.name !== this.config.channel) {
                 return;
             }
 
@@ -58,6 +58,11 @@ class Client extends Discord.Client {
             // Do not handle the message if it's from a bot (like ourselves)
             if (message.author.bot) {
                 return;
+            }
+
+            // If it's a private message, send it to the right handler
+            if (message.channel.type === "dm") {
+                this.handleDM(message);
             }
 
             // Determine if the message is a command and handle it.
@@ -93,8 +98,11 @@ class Client extends Discord.Client {
      * @param {Discord.Message} message - the message that prompted the loading of that game, if available
      */
     loadGame(gameName, message = null) {
+        if (!this.available_games.has(gameName)) {
+            message.reply(`Je ne connais pas le jeu "${gameName}"`);
+        }
         this.game = this.available_games.get(gameName);
-        console.log(`loading the game "${this.game.name}`)
+        console.log(`loading the game "${this.game.name}`);
         this.registerCommands(`${this.game.path}/commands`, true);
         this.game.load(this, message);
     }
@@ -136,6 +144,14 @@ class Client extends Discord.Client {
         }
 
         return usage;
+    }
+
+    handleDM(message) {
+        if (this.game) {
+            return this.game.handleDM(this, message);
+        }
+
+        return message.reply("Aucun jeu n'est chargé")
     }
 
     /** Clean up a raw command and dispatch it to the correct handler

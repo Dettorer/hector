@@ -27,9 +27,17 @@ function unload(message = null) {
  */
 function play(client, message = null) {
     if (message) {
-        console.log(`starting a game of ${this.name}`)
-        message.channel.send(`Je lance une partie de ${this.name} !`)
     }
+}
+
+/**
+ * Handle a private message from a user
+ *
+ * @param {Hector.Client} client - the bot object
+ * @param {Discord.Message} message - the private message
+ */
+function handleDM(client, message) {
+    message.reply("C'est pas le moment");
 }
 
 module.exports = {
@@ -37,6 +45,7 @@ module.exports = {
     name: '(WIP) cadavre exquis',
     short_description: 'Jeux de construction de phrase à collaboration aveugle',
     path: './games/cadavre_exquis',
+    handleDM: handleDM,
     load: load,
-    unload: unload,
+    unload: unload
 };
