@@ -72,8 +72,10 @@ module.exports = {
     path: '<path>', // path to the game folder (where `game.js` file and `commands` folder are)
     load: load, // a function that will be invoked when loading the game to let you prepare any stuff you need before it starts
     unload: unload, // a function that will be invoked when stopping the game to let you clean up any stuff you may have added do `client`
-    play: play // the function that will be invoked when the game should start
 };
+
+Furthermore, every game should implement a `start` command, that launches a
+match. It can be assumed that its `load` function has been called before.
 
 If at any point, your game is in a state that makes it unsafe to unload, please
 update the client's `loadLocked` boolean to `true`, it will prevent users to

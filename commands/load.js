@@ -15,7 +15,6 @@ module.exports = {
             message.reply(`Je ne connais pas le jeu "${args[0]}"`)
         } else {
             client.loadGame(args[0], message);
-            client.game.play(client, message);
         }
     },
 };

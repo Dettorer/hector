@@ -36,5 +36,4 @@ module.exports = {
     path: './games/cadavre_exquis',
     load: load,
     unload: unload,
-    play: play
 };
