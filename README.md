@@ -74,4 +74,9 @@ module.exports = {
     unload: unload, // a function that will be invoked when stopping the game to let you clean up any stuff you may have added do `client`
     play: play // the function that will be invoked when the game should start
 };
+
+If at any point, your game is in a state that makes it unsafe to unload, please
+update the client's `loadLocked` boolean to `true`, it will prevent users to
+unload your game inavertedly when trying to load another one. Keep in mind
+though that they still can kill your game, but they have to do it explicitly.
 ```

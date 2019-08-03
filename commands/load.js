@@ -5,8 +5,10 @@ module.exports = {
     minArgs: 1,
     help: "",
     execute(message, args, client) {
-        if (client.game) {
-            return message.reply(`Un jeu (${client.game.name}) est déjà chargé, il faut d'abord le quitter.`)
+        if (client.game && client.loadLocked) {
+            return message.reply(`Un jeu (${client.game.name}) est en cours, il faut d'abord le quitter.`) // TODO: make an abort command that kills a game and unload it
+        } else if (client.game && !client.loadLocked) {
+            client.unloadGame(message);
         }
 
         if (!client.available_games.has(args[0])) {

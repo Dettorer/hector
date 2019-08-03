@@ -23,6 +23,9 @@ class Client extends Discord.Client {
         this.available_games = new Discord.Collection();
         this.game = null;
 
+        // This boolean will be used by games to signal when they can be safely unloaded (for example, when a match is running, this should be false)
+        this.loadLocked = false;
+
         // Buffer for `bufferizeText`, `flushBufferToString` and `flushBufferToRichEmbed`
         this.textBuffer = "";
 
