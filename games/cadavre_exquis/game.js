@@ -1,5 +1,16 @@
 const Hector = require("../../hector.js");
 const Discord = require("discord.js");
+const Data = require("./data.json");
+
+/**
+ * Start a session of the game
+ *
+ * @param {Hector.Client} client - the bot object
+ * @param {Discord.Message} message - the message that made the bot start that game
+ */
+function start(client, message) {
+    message.channel.send("C'est parti, lisez vos messages privés pour savoir quoi m'envoyer.")
+}
 
 /**
  * Initialize needed data for the game
@@ -20,15 +31,6 @@ function unload(message = null) {
 }
 
 /**
- * Start a session of the game
- *
- * @param {Hector.Client} client - the bot object
- * @param {Discord.Message} message - the message that made the bot start that game, if available
- */
-function start(client, message = null) {
-}
-
-/**
  * Handle a private message from a user
  *
  * @param {Hector.Client} client - the bot object
@@ -45,5 +47,6 @@ module.exports = {
     path: './games/cadavre_exquis',
     handleDM: handleDM,
     load: load,
-    unload: unload
+    unload: unload,
+    start: start
 };

@@ -1,0 +1,28 @@
+{
+    "parts": {
+        "S": "sujet",
+        "Se": "attribut du sujet",
+        "V": "verbe",
+        "C": "complément d'objet",
+        "Ce": "attribut du complément d'objet",
+        "Cc": "complément circonstentiel (temps, lieu, manière, cause, …)"
+    },
+
+    "subjectParts": ["S", "Se", "V"],
+
+    "examples": {
+        "S": ["les sorcières", "la voisine", "les enfants", "le pape"],
+        "Se": ["chamboulées", "toute jaune", "muets", "confiant"],
+        "V": ["sont amusées par", "est émue par", "s'amusent avec", "parle avec"],
+        "C": ["des sirènes", "une veuve", "des hommes", "le père Noël"],
+        "Ce": ["muettes", "apeurée", "terrifiés", "inquiet"],
+        "Cc": ["près du lampadaire", "la veille de Noël", "sans bouger"]
+    },
+
+    "modes": {
+        "3": ["S", "V", "C"],
+        "4": ["S", "Se", "V", "C"],
+        "5": ["S", "Se", "V", "C", "Ce"],
+        "6": ["S", "Se", "V", "C", "Ce", "Cc"]
+    }
+}
