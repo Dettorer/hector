@@ -16,8 +16,8 @@ module.exports = {
      * @param {Array<String>} args - the arguments the user gave to the command
      */
     execute(message, args, client) {
-        client.bufferizeText("Hector est un bot discord développé par Paul \"Dettorer\" Hervot.");
-        client.bufferizeText("Source, informations et signalement de bugs sur github : https://github.com/Dettorer/hector");
+        client.bufferizeLine("Hector est un bot discord développé par Paul \"Dettorer\" Hervot.");
+        client.bufferizeLine("Source, informations et signalement de bugs sur github : https://github.com/Dettorer/hector");
         return message.channel.send(client.flushBufferToString());
     },
 };

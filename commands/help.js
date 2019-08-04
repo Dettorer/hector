@@ -10,7 +10,7 @@ const Discord = require("discord.js");
 function listCommands(client, channel) {
     // Bufferize general commands
     for (var command of client.commands.array()) {
-        client.bufferizeText(`\`${client.config.prefix}${command.name}\` : ${command.description}`)
+        client.bufferizeLine(`\`${client.config.prefix}${command.name}\` : ${command.description}`)
     }
 
     // Send them in an embed
@@ -21,7 +21,7 @@ function listCommands(client, channel) {
     if (client.game) { // if a game is loaded, list its commands
         // Bufferize the current game commands
         for (var command of client.game_commands.array()) {
-            client.bufferizeText(`\`${client.config.prefix}${command.name}\` : ${command.description}`)
+            client.bufferizeLine(`\`${client.config.prefix}${command.name}\` : ${command.description}`)
         }
 
         // Send them in an embed
@@ -62,11 +62,11 @@ module.exports = {
         }
 
         // Print the command's usage, then its short description and its help.
-        client.bufferizeText(`**usage :** \`${client.getCommandUsage(command)}\``);
-        client.bufferizeText(command.description);
+        client.bufferizeLine(`**usage :** \`${client.getCommandUsage(command)}\``);
+        client.bufferizeLine(command.description);
         if (command.help != "") {
-            client.bufferizeText("");
-            client.bufferizeText(command.help);
+            client.bufferizeLine("");
+            client.bufferizeLine(command.help);
         }
 
         var embed = client.flushBufferToEmbed();

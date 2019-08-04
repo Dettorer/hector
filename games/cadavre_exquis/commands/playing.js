@@ -20,10 +20,11 @@ module.exports = {
             return message.channel.send("Personne ne joue.");
         }
 
-        client.bufferizeText(`Il y a ${client.game.pendingPlayers.size} personnes prêtes à jouer:`);
+        client.bufferizeLine(`Il y a ${client.game.pendingPlayers.size} personnes prêtes à jouer:`);
         for (let id of client.game.pendingPlayers) {
-            client.bufferizeText(message.channel.members.get(id).displayName);
+            client.bufferizeText(`${message.channel.members.get(id).displayName} `);
         }
+        client.bufferizeLine("");
 
         return message.channel.send(client.flushBufferToString());
     }

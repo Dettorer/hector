@@ -179,8 +179,8 @@ class Client extends Discord.Client {
         }
 
         if (args.length < command.minArgs) {
-            this.bufferizeText("il manque un ou plusieurs paramètre");
-            this.bufferizeText(`usage : \`${this.getCommandUsage(command)}\``)
+            this.bufferizeLine("il manque un ou plusieurs paramètre");
+            this.bufferizeLine(`usage : \`${this.getCommandUsage(command)}\``)
 
             return message.reply(this.flushBufferToString());
         }
@@ -188,11 +188,20 @@ class Client extends Discord.Client {
     }
 
     /**
-     * Save some text to form a sendable message for later
+     * Save some text to form a sendable message for later (without a newline)
      *
      * @param {String} text
      */
     bufferizeText(text) {
+        this.textBuffer += text;
+    }
+
+    /**
+     * Save a line of text to form a sendable message for later
+     *
+     * @param {String} text
+     */
+    bufferizeLine(text) {
         this.textBuffer += text + "\n";
     }
 
