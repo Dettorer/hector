@@ -87,9 +87,6 @@ module.exports = {
 };
 ```
 
-Furthermore, every game should implement a `start` command, that launches a
-match. It can be assumed that its `load` function has been called before.
-
 If at any point, your game is in a state that makes it unsafe to unload, please
 update the client's `loadLocked` boolean to `true`, it will prevent users to
 unload your game inavertedly when trying to load another one. Keep in mind
