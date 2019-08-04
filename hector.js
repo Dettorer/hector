@@ -53,7 +53,16 @@ class Client extends Discord.Client {
             }
 
             // Log every message that goes to our channel
-            console.log(`<${message.author.username}> ${message.content}`);
+            var logLine = "";
+            if (message.channel.type === "dm") {
+                logLine += "DM ";
+            }
+            logLine += `<${message.author.username}`;
+            if (message.author.id === this.user.id) {
+                logLine += ` -> ${message.channel.recipient.username}`;
+            }
+            logLine += `> ${message.content}`;
+            console.log(logLine);
 
             // Do not handle the message if it's from a bot (like ourselves)
             if (message.author.bot) {
