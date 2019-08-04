@@ -8,6 +8,7 @@ const Discord = require("discord.js");
  * @param {Discord.Message} message - the message that made the bot start that game, if available
  */
 function load(client, message = null) {
+    client.game.pendingPlayers = new Set();
 }
 
 /**
@@ -24,9 +25,7 @@ function unload(message = null) {
  * @param {Hector.Client} client - the bot object
  * @param {Discord.Message} message - the message that made the bot start that game, if available
  */
-function play(client, message = null) {
-    if (message) {
-    }
+function start(client, message = null) {
 }
 
 /**
