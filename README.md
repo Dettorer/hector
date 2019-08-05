@@ -26,6 +26,21 @@ You can then launch the `hector.js` file with nodejs, for example in a terminal 
 $ node hector.js
 ```
 
+# Available games
+## Cadavre exquis (WIP)
+
+*This is a work in progress*
+
+In this game, players create a sentence by each writing one part of it, without
+knowing what the others in theirs. The bot coordinates the players by querying
+each one of them which part should they write and with what agreements they
+should use. The result is usually a hilariously nonsensical sentence with
+correct grammar (especially if players are creative).
+
+This implementation of the game is heavily inspired by
+[Zopieux](https://github.com/Zopieux)'s one for IRC:
+[cadavre-exquis](https://github.com/Zopieux/cadavre-exquis/).
+
 # Development
 ## Add a command
 
