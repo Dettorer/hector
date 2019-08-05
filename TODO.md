@@ -1,0 +1,1 @@
+- permissions handling for commands
