@@ -162,7 +162,7 @@ class Client extends Discord.Client {
             return this.game.handleDM(this, message);
         }
 
-        return message.reply("Aucun jeu n'est chargé")
+        return message.reply("Aucun jeu n'est chargé, je ne regarde pas les messages privés.")
     }
 
     /** Clean up a raw command and dispatch it to the correct handler
