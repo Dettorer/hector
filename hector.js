@@ -58,7 +58,7 @@ class Client extends Discord.Client {
                 logLine += "DM ";
             }
             logLine += `<${message.author.username}`;
-            if (message.author.id === this.user.id) {
+            if (message.channel.type === "dm" && message.author.id === this.user.id) {
                 logLine += ` -> ${message.channel.recipient.username}`;
             }
             logLine += `> ${message.content}`;
