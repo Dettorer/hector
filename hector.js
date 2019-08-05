@@ -71,7 +71,7 @@ class Client extends Discord.Client {
 
             // If it's a private message, send it to the right handler
             if (message.channel.type === "dm") {
-                this.handleDM(message);
+                return this.handleDM(message);
             }
 
             // Determine if the message is a command and handle it.
