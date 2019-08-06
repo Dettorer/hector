@@ -25,6 +25,21 @@
         "lodash": "^4.17.15"
     },
     "scripts": {
-        "start": "node ."
+        "start": "babel-node hector.js"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.5.5",
+        "@babel/node": "^7.5.5",
+        "@babel/preset-env": "^7.5.5"
+    },
+    "babel": {
+        "presets": [[
+            "@babel/preset-env",
+            {
+                "targets": {
+                    "node": "current"
+                }
+            }
+        ]]
     }
 }

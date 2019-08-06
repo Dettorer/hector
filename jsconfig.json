@@ -1,8 +1,9 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "ES2018",
         "allowJs": true,
-        "checkJs": true
+        "checkJs": true,
+        "module": "esnext"
     },
     "exclude": [
         "node_modules"

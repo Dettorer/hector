@@ -10,20 +10,22 @@ made by someone whose using that project to learn javascript (and that would be
 me).
 
 # Usage
-This bot needs the [discord.js](https://discord.js.org) library:
+This bot needs the [discord.js](https://discord.js.org) library and few more
+dependencies you need to install with:
 
 ```
-$ npm install discord.js
+$ npm install
 ```
 
 To configure the bot, copy `config.json.example` to `config.json` and replace
 all placeholders (values surrounded by chevrons `<>`) by actual relevant values
 for your context (please remove the chevrons when you do so).
 
-You can then launch the `hector.js` file with nodejs, for example in a terminal on Linux:
+You can then launch the bot by using the `start` script of the npm package, for
+example in a terminal on Linux:
 
 ```
-$ node hector.js
+$ npm start
 ```
 
 # Available games
