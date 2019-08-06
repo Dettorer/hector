@@ -135,23 +135,29 @@ export function start(client, message) {
 function endGame(client) {
     client.game.channel.send("Tout le monde m'a donné sa partie ! Voici votre création :");
 
+    // Merge the sentence
     for (const assignment of client.game.assignments) {
         client.bufferizeText(assignment[1].response + " ");
     }
 
+    // Send it in an embed
     client.game.channel.send(client.flushBufferToEmbed());
 
+    // Unlock the game
     client.game.playing = false;
-    client.game.loadLocked = false;
+    client.loadLocked = false;
 }
 
 /**
- * Handle a private message from a user
+ * Handle a private message from a user.
+ * If it's a contribution for an ongoing game, save it.
+ * If it's the last contribution we were waiting for, also end the game.
  *
  * @param {Hector} client - the bot object
  * @param {Discord.Message} message - the private message
  */
 export function handleDM(client, message) {
+    // If this user has no reason to send us a DM right now, tell them why
     if (!client.game.pendingPlayers.has(message.author.id)) {
         return message.reply(`Vous n'avez pas rejoins de partie, vous pouvez utiliser la commande ${client.config.prefix}play sur le salon de jeu pour rejoindre la prochaîne.`);
     }
@@ -159,14 +165,19 @@ export function handleDM(client, message) {
         return message.reply(`Vous avez bien rejoint la prochaîne partie, mais celle-ci n'a pas encore commencé. Si suffisament de personnes sont prêtes, utilisez la commande ${client.config.prefix}start sur le salon de jeu pour en lancer une.`);
     }
 
+    // It's a user giving us their contribution, we need to save it
+
+    // Acknowledge the reception to the user
+    message.reply("Bien reçu.");
     var assignment = client.game.assignments.get(message.author.id)
     if (!assignment.response) {
+        // If the user didn't give a contribution for this game, register that
+        // there is one less contribution to wait for, and announce it on the
+        // game channel
         client.game.partsMissing--;
         client.game.channel.send(`${message.author.username} m'a donné sa partie.`);
     }
     assignment.response = message.content;
-
-    message.reply("Bien reçu.");
 
     if (client.game.partsMissing === 0) {
         endGame(client);
