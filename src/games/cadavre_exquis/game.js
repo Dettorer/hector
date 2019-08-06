@@ -39,17 +39,16 @@ function sendInstructions(client, message, mode) {
         // Get the users' handle
         const player = message.channel.members.get(playerId);
 
-        // Bufferize the instructions
+        // Send the instructions
         var partTune = "";
         if (assignment.part === "V") {
             partTune = ` conjugué à la 3e personne, au ${assignment.gender} ${assignment.number}`;
         } else if (assignment.part !== "Cc") {
             partTune = ` accordé au ${assignment.gender} ${assignment.number}`;
         }
-        client.bufferizeLine(`Donne-moi un ${Data.parts.get(assignment.part)}${partTune} convenant à une phrase ressemblant à :`);
+        const instructions = `Donne-moi un ${Data.parts.get(assignment.part)}${partTune} convenant à une phrase ressemblant à :`;
 
-        // Bufferize the example
-        client.bufferizeText("\"");
+        // Send the example
         for (const part of mode) {
             const partExamples = Data.examples.get(part);
             const variantIndex = exampleIndex(assignment.gender, assignment.number);
@@ -64,9 +63,8 @@ function sendInstructions(client, message, mode) {
                 client.bufferizeText(" ");
             }
         }
-        client.bufferizeText("\"");
-
-        player.send(client.flushBufferToString());
+        player.send(instructions);
+        player.send(client.flushBufferToEmbed());
     }
 }
 
@@ -82,6 +80,9 @@ export function start(client, message) {
     client.game.playing = true;
     // clone the pendingPlayers array using the spread operator, then shuffle it
     const players = Lodash.shuffle([...client.game.pendingPlayers]);
+
+    // Save the channel we're in for the endGame function
+    client.game.channel = message.channel;
 
     // Decide gender and number for the sentence.
     const subjectGender = Lodash.sample(["masculin", "féminin"]);
@@ -119,10 +120,29 @@ export function start(client, message) {
 
     // Generate and give instructions to players in DM
     sendInstructions(client, message, mode);
+    client.game.partsMissing = players.length;
 
-    // (later) time management
+    // TODO (later) time management
 
     message.channel.send("C'est parti, lisez vos messages privés pour savoir quoi m'envoyer !")
+}
+
+/**
+ * Display the constructed sentence in the game channel
+ *
+ * @param {Hector} client - the bot object
+ */
+function endGame(client) {
+    client.game.channel.send("Tout le monde m'a donné sa partie ! Voici votre création :");
+
+    for (const assignment of client.game.assignments) {
+        client.bufferizeText(assignment[1].response + " ");
+    }
+
+    client.game.channel.send(client.flushBufferToEmbed());
+
+    client.game.playing = false;
+    client.game.loadLocked = false;
 }
 
 /**
@@ -132,7 +152,25 @@ export function start(client, message) {
  * @param {Discord.Message} message - the private message
  */
 export function handleDM(client, message) {
-    message.reply("C'est pas le moment");
+    if (!client.game.pendingPlayers.has(message.author.id)) {
+        return message.reply(`Vous n'avez pas rejoins de partie, vous pouvez utiliser la commande ${client.config.prefix}join sur le salon de jeu pour rejoindre la prochaîne.`);
+    }
+    if (!client.game.playing) {
+        return message.reply(`Vous avez bien rejoint la prochaîne partie, mais celle-ci n'a pas encore commencé. Si suffisament de personnes sont prêtes, utilisez la commande ${client.config.prefix}start sur le salon de jeu pour en lancer une.`);
+    }
+
+    var assignment = client.game.assignments.get(message.author.id)
+    if (!assignment.response) {
+        client.game.partsMissing--;
+        client.game.channel.send(`${message.author.username} m'a donné sa partie.`);
+    }
+    assignment.response = message.content;
+
+    message.reply("Bien reçu.");
+
+    if (client.game.partsMissing === 0) {
+        endGame(client);
+    }
 }
 
 /**
