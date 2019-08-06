@@ -1,5 +1,5 @@
 # Hector
-A [discord.js](https://discord.js.org) bot that (will) implement little board
+A [discord.js](https://discord.js.org) bot that implements little board
 games (only speaks french as of today)
 
 Its name comes from the second gym leader from Pokémon gold/silver:
@@ -29,9 +29,7 @@ $ npm start
 ```
 
 # Available games
-## Cadavre exquis (WIP)
-
-*This is a work in progress*
+## Cadavre exquis
 
 In this game, players create a sentence by each writing one part of it, without
 knowing what the others in theirs. The bot coordinates the players by querying

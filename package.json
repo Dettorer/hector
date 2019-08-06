@@ -1,7 +1,7 @@
 {
     "name": "Hector",
     "version": "1.0.0-alpha",
-    "description": "A discord.js bot that (will) implement little board games (only speaks french as of today)",
+    "description": "A discord.js bot that implements little board games (only speaks french as of today)",
     "license": "AGPL-3.0-or-later",
     "keywords": [
         "discord",
