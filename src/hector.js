@@ -70,6 +70,14 @@ export default class Client extends Discord.Client {
             }
             logLine += `> ${message.content}`;
             console.log(logLine);
+            for (const embed of message.embeds) {
+                if (embed.title) {
+                    console.log(embed.title);
+                }
+                if (embed.description) {
+                    console.log(embed.description);
+                }
+            }
 
             // Do not handle the message if it's from a bot (like ourselves)
             if (message.author.bot) {
