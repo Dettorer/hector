@@ -153,7 +153,7 @@ function endGame(client) {
  */
 export function handleDM(client, message) {
     if (!client.game.pendingPlayers.has(message.author.id)) {
-        return message.reply(`Vous n'avez pas rejoins de partie, vous pouvez utiliser la commande ${client.config.prefix}join sur le salon de jeu pour rejoindre la prochaîne.`);
+        return message.reply(`Vous n'avez pas rejoins de partie, vous pouvez utiliser la commande ${client.config.prefix}play sur le salon de jeu pour rejoindre la prochaîne.`);
     }
     if (!client.game.playing) {
         return message.reply(`Vous avez bien rejoint la prochaîne partie, mais celle-ci n'a pas encore commencé. Si suffisament de personnes sont prêtes, utilisez la commande ${client.config.prefix}start sur le salon de jeu pour en lancer une.`);
