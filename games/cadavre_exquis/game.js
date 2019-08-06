@@ -1,8 +1,20 @@
-const Hector = require("../../hector.js");
-const Discord = require("discord.js");
-const Data = require("./data.js");
-const Lcollection = require("lodash/collection");
+import Hector from "../../hector.js";
+import Discord from "discord.js";
+import Data from "./data.js";
+import Lodash from "lodash";
 
+// The game's informations
+export const short_name = 'cadavre';
+export const name = '(WIP) cadavre exquis';
+export const short_description = 'Jeux de construction de phrase à collaboration aveugle';
+export const path = './games/cadavre_exquis';
+
+/**
+ * Compute the index to use for Data's examples for a gender and a number
+ *
+ * @param {String} gender
+ * @param {String} number
+ */
 function exampleIndex(gender, number) {
     var index = 0;
     if (gender === "masculin") {
@@ -17,7 +29,7 @@ function exampleIndex(gender, number) {
 /**
  * Send instructions to players after they have been assigned a part in the sentence
  *
- * @param {Hector.Client} client - the bot object
+ * @param {Hector} client - the bot object
  * @param {Discord.Message} message - the message that made the bot start that game
  * @param {Array<String>} mode - the current game's mode (assigned sentence parts)
  */
@@ -39,8 +51,8 @@ function sendInstructions(client, message, mode) {
         // Bufferize the example
         client.bufferizeText("\"");
         for (const part of mode) {
-            partExamples = Data.examples.get(part);
-            variantIndex = exampleIndex(assignment.gender, assignment.number);
+            const partExamples = Data.examples.get(part);
+            const variantIndex = exampleIndex(assignment.gender, assignment.number);
 
             if (part === assignment.part) {
                 client.bufferizeText("**");
@@ -61,28 +73,28 @@ function sendInstructions(client, message, mode) {
 /**
  * Start a session of the game
  *
- * @param {Hector.Client} client - the bot object
+ * @param {Hector} client - the bot object
  * @param {Discord.Message} message - the message that made the bot start that game
  */
-function start(client, message) {
+export function start(client, message) {
     // load-lock the client and register we're in a game
     client.loadLocked = true;
     client.game.playing = true;
     // clone the pendingPlayers array using the spread operator, then shuffle it
-    const players = Lcollection.shuffle([...client.game.pendingPlayers]);
+    const players = Lodash.shuffle([...client.game.pendingPlayers]);
 
     // Decide gender and number for the sentence.
-    const subjectGender = Lcollection.sample(["masculin", "féminin"]);
-    const subjectNumber = Lcollection.sample(["singulier", "pluriel"]);
-    const complementGender = Lcollection.sample(["masculin", "féminin"]);
-    const complementNumber = Lcollection.sample(["singulier", "pluriel"]);
+    const subjectGender = Lodash.sample(["masculin", "féminin"]);
+    const subjectNumber = Lodash.sample(["singulier", "pluriel"]);
+    const complementGender = Lodash.sample(["masculin", "féminin"]);
+    const complementNumber = Lodash.sample(["singulier", "pluriel"]);
 
     // Assign parts to players
     const mode = Data.modes.get(players.length);
     client.game.assignments = new Discord.Collection();
     var i = 0;
     for (const part of mode) {
-        player = players[i];
+        const player = players[i];
 
         var gender;
         var number;
@@ -114,12 +126,22 @@ function start(client, message) {
 }
 
 /**
+ * Handle a private message from a user
+ *
+ * @param {Hector} client - the bot object
+ * @param {Discord.Message} message - the private message
+ */
+export function handleDM(client, message) {
+    message.reply("C'est pas le moment");
+}
+
+/**
  * Initialize needed data for the game
  *
- * @param {Hector.Client} client - the bot object
+ * @param {Hector} client - the bot object
  * @param {Discord.Message} message - the message that made the bot start that game, if available
  */
-function load(client, message = null) {
+export function load(client, message = null) {
     client.game.pendingPlayers = new Set(); // Users who want to play in the next game
     client.game.playing = false; // true if we're currently in a game
 }
@@ -129,26 +151,5 @@ function load(client, message = null) {
  *
  * @param {Discord.Message} message - the message that made the bot start that game, if available
  */
-function unload(message = null) {
+export function unload(message = null) {
 }
-
-/**
- * Handle a private message from a user
- *
- * @param {Hector.Client} client - the bot object
- * @param {Discord.Message} message - the private message
- */
-function handleDM(client, message) {
-    message.reply("C'est pas le moment");
-}
-
-module.exports = {
-    short_name: 'cadavre',
-    name: '(WIP) cadavre exquis',
-    short_description: 'Jeux de construction de phrase à collaboration aveugle',
-    path: './games/cadavre_exquis',
-    handleDM: handleDM,
-    load: load,
-    unload: unload,
-    start: start
-};

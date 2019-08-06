@@ -1,6 +1,6 @@
-const Discord = require("discord.js");
+import Discord from "discord.js";
 
-module.exports = {
+export default {
     parts: new Discord.Collection([
         ["S", "sujet"],
         ["Se", "attribut du sujet"],

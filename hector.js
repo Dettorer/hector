@@ -1,15 +1,13 @@
-const Discord = require("discord.js");
-const fs = require("fs");
+import Discord from "discord.js";
+import fs from "fs";
 
-class Client extends Discord.Client {
+export default class Client extends Discord.Client {
     /**
      * Creates a new Hector bot and load its configuration
      *
      * @constructor
-     * @param {String} configPath - The path to configuration file
-     * @param {String} commandsPath - An optional path to load general purpose commands from (those can be loaded later by manually calling `registerCommands`)
      */
-    constructor(configPath, commandsPath = null, gamesPath = null) {
+    constructor() {
         // Call parent's (discord.js') constructor
         super();
 
@@ -28,13 +26,22 @@ class Client extends Discord.Client {
 
         // Buffer for `bufferizeText`, `flushBufferToString` and `flushBufferToRichEmbed`
         this.textBuffer = "";
+    }
 
+    /**
+     * Load the bot's configuration, register commands and games, and finally set Discord hooks.
+     *
+     * @param {String} configPath - The path to configuration file
+     * @param {String} commandsPath - An optional path to load general purpose commands from (those can be loaded later by manually calling `registerCommands`)
+     * @param {String} gamesPath - An optional path to load the games from (those can be loaded later by manually calling `registerGames`)
+     */
+    async init(configPath, commandsPath = null, gamesPath = null) {
         // Load the configuration
-        this.config = require(configPath);
+        this.config = await import(configPath);
 
         // Load the general purpose commands and available games
-        this.registerCommands(this.config.commandsPath);
-        this.registerGames(this.config.gamesPath);
+        await this.registerCommands(this.config.commandsPath);
+        await this.registerGames(this.config.gamesPath);
 
         this.setHooks();
     }
@@ -87,10 +94,10 @@ class Client extends Discord.Client {
      * @param {String} path - the path in which we'll search for commands to load. If it's relative to the working directory, it must start with "./"
      * @param {Boolean} [game = false] - weather these commands are specific to the current loaded game or not
      */
-    registerCommands(path, game=false) {
+    async registerCommands(path, game=false) {
         const commandFiles = fs.readdirSync(`${path}`).filter(file => file.endsWith(".js"));
         for (const file of commandFiles) {
-            const command = require(`${path}/${file}`);
+            const command = await import(`${path}/${file}`);
 
             if (game) {
                 this.game_commands.set(command.name, command);
@@ -101,20 +108,33 @@ class Client extends Discord.Client {
     }
 
     /**
+     * Find the available games and register their handler in the client (indexed by the game's name).
+     *
+     * @param {String} path - the path in which we'll search for games to register. If it's relative to the working directory, it must start with "./"
+     */
+    async registerGames(path) {
+        const gameDirs = fs.readdirSync(`${path}`, {withFileTypes: true}).filter(dirent => dirent.isDirectory());
+        for (const dir of gameDirs) {
+            const game = await import(`${path}/${dir.name}/game.js`);
+
+            this.available_games.set(game.short_name, game);
+        }
+    }
+
+    /**
      * Set up a game
      *
      * @param {String} gameName - the name of the game
      * @param {Discord.Message} message - the message that prompted the loading of that game, if available
      */
-    loadGame(gameName, message = null) {
+    async loadGame(gameName, message = null) {
         if (!this.available_games.has(gameName)) {
             message.reply(`Je ne connais pas le jeu "${gameName}"`);
         }
         this.game = this.available_games.get(gameName);
         console.log(`loading the game "${this.game.name}`);
-        this.registerCommands(`${this.game.path}/commands`, true);
+        await this.registerCommands(`${this.game.path}/commands`, true);
         this.game.load(this, message);
-        message.channel.send(`J'ouvre le jeu "${this.game.name}" !`)
     }
 
     /**
@@ -132,20 +152,6 @@ class Client extends Discord.Client {
         this.game.unload(message);
         this.game = null;
         this.game_commands = new Discord.Collection();
-    }
-
-    /**
-     * Find the available games and register their handler in the client (indexed by the game's name).
-     *
-     * @param {String} path - the path in which we'll search for games to register. If it's relative to the working directory, it must start with "./"
-     */
-    registerGames(path) {
-        const gameDirs = fs.readdirSync(`${path}`, {withFileTypes: true}).filter(dirent => dirent.isDirectory());
-        for (const dir of gameDirs) {
-            const game = require(`${path}/${dir.name}/game.js`);
-
-            this.available_games.set(game.short_name, game);
-        }
     }
 
     getCommandUsage(command) {
@@ -240,11 +246,10 @@ class Client extends Discord.Client {
     }
 }
 
-module.exports.Client = Client;
-
 // @ts-ignore (vscode thinks this condition will always return false, which isn't the case if the file is directly given to node)
 if (require.main === module) {
-    var client = new Client("./config.json");
+    var client = new Client();
 
-    client.run();
+    client.init("./config.json")
+        .then(() => client.run());
 }

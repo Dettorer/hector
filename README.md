@@ -53,27 +53,25 @@ the `commands` folder of a game (for commands specific to that game).
 This file must export some symbols as described in the following template:
 
 ```javascript
-const Hector = require("hector.js");
-const Discord = require("discord.js");
+import Hector from "../hector.js";
+import Discord from "discord.js";
 
-module.exports = {
-    name: '<name of the command>', // it's what users will type after the command prefix to invoke your command
-    description: '<short description>', // will be displayed when listing commands
-    usage: '<usage>', // will be displayed by the `help` command
-    minArgs: <count>, // number of mandatory arguments for this command
-    help: '<optional notes, remarks or further help>', // will be displayed by the `help` command
+export const name = '<name of the command>'; // it's what users will type after the command prefix to invoke your command
+export const description = '<short description>'; // will be displayed when listing commands
+export const usage = '<usage>'; // will be displayed by the `help` command
+export const minArgs = <count>; // number of mandatory arguments for this command
+export const help = '<optional notes, remarks or further help>'; // will be displayed by the `help` command
 
-    /**
-     * Handle the command
-     *
-     * @param {Hector.Client} client - the bot object
-     * @param {Discord.Message} message - the user message that invoked the command
-     * @param {Array<String>} args - the arguments the user gave to the command
-     */
-    execute(message, args, client) {
-        // Your code to handle the command
-    },
-};
+/**
+ * Handle the command
+ *
+ * @param {Hector.Client} client - the bot object
+ * @param {Discord.Message} message - the user message that invoked the command
+ * @param {Array<String>} args - the arguments the user gave to the command
+ */
+export function execute(message, args, client) {
+    // Your code to handle the command
+}
 ```
 
 Given to the `execute` function are:
@@ -93,15 +91,36 @@ least the following:
 The `game.js` file must export the following symbols:
 
 ```javascript
-module.exports = {
-    short_name: '<name>', // used to identify the game both internally and by users to launch a game
-    name: '<full name>', // more elaborate name used when listing games or speaking about it
-    short_description: '<description>', // used when listing games
-    path: '<path>', // path to the game folder (where `game.js` file and `commands` folder are)
-    handleDM: handleDM, // the function that will be called when the client recieves a private message
-    load: load, // a function that will be invoked when loading the game to let you prepare any stuff you need before it starts
-    unload: unload // a function that will be invoked when stopping the game to let you clean up any stuff you may have added do `client`
-};
+export const short_name = '<name>'; // used to identify the game both internally and by users to launch a game
+export const name = '<full name>'; // more elaborate name used when listing games or speaking about it
+export const short_description = '<description>'; // used when listing games
+export const path = '<path>'; // path to the game folder (where `game.js` file and `commands` folder are)
+
+/**
+ * Handle a private message from a user
+ *
+ * @param {Hector} client - the bot object
+ * @param {Discord.Message} message - the private message
+ */
+export function handleDM(client, message) {
+}
+
+/**
+ * Initialize needed data for the game
+ *
+ * @param {Hector} client - the bot object
+ * @param {Discord.Message} message - the message that made the bot start that game, if available
+ */
+export function load(client, message = null) {
+}
+
+/**
+ * End the current game and clean up our data. This can be called because the game ended or because we want to abort it (so it can happen anytime).
+ *
+ * @param {Discord.Message} message - the message that made the bot start that game, if available
+ */
+export function unload(message = null) {
+}
 ```
 
 If at any point, your game is in a state that makes it unsafe to unload, please
