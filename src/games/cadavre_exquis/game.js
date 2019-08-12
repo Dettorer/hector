@@ -80,6 +80,8 @@ export function start(client, message) {
     client.game.playing = true;
     // clone the pendingPlayers array using the spread operator, then shuffle it
     const players = Lodash.shuffle([...client.game.pendingPlayers]);
+    // and save it in the client as a set
+    client.game.currentPlayers = new Set(players);
 
     // Save the channel we're in for the endGame function
     client.game.channel = message.channel;
@@ -143,7 +145,8 @@ function endGame(client) {
     // Send it in an embed
     client.game.channel.send(client.flushBufferToEmbed());
 
-    // Unlock the game
+    // Unlock and clean the game
+    client.game.currentPlayers = null;
     client.game.playing = false;
     client.loadLocked = false;
 }
@@ -158,10 +161,12 @@ function endGame(client) {
  */
 export function handleDM(client, message) {
     // If this user has no reason to send us a DM right now, tell them why
-    if (!client.game.pendingPlayers.has(message.author.id)) {
-        return message.reply(`Vous n'avez pas rejoins de partie, vous pouvez utiliser la commande ${client.config.prefix}play sur le salon de jeu pour rejoindre la prochaîne.`);
+    const isPending = client.game.pendingPlayers.has(message.author.id);
+    const isCurrent = client.game.playing && client.game.currentPlayers.has(message.author.id);
+    if (!isPending && !isCurrent) {
+        return message.reply(`Vous n'avez pas rejoint de partie, vous pouvez utiliser la commande ${client.config.prefix}play sur le salon de jeu pour rejoindre la prochaîne.`);
     }
-    if (!client.game.playing) {
+    if (isPending && !isCurrent) {
         return message.reply(`Vous avez bien rejoint la prochaîne partie, mais celle-ci n'a pas encore commencé. Si suffisament de personnes sont prêtes, utilisez la commande ${client.config.prefix}start sur le salon de jeu pour en lancer une.`);
     }
 
