@@ -19,5 +19,7 @@ export function execute(message, args, client) {
     if (!client.game.pendingPlayers.has(message.author.id)) {
         client.game.pendingPlayers.add(message.author.id);
         return message.reply("Ok, je note pour la prochaîne partie");
+    } else {
+        return message.reply("C'est déjà noté");
     }
 }
