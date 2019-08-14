@@ -6,8 +6,8 @@ Its name comes from the second gym leader from Pokémon gold/silver:
 [Bugsy](https://bulbapedia.bulbagarden.net/wiki/Bugsy) (whose french name is
 Hector). Bugsy is a gym leader, perfect for a bot that is a game master, and
 he specializes in Bug-type Pokémon, making him full of bug, perfect for a bot
-made by someone whose using that project to learn javascript (and that would be
-me).
+made by someone whose using that project to learn javascript and typescript (and
+that would be me).
 
 # Usage
 This bot needs the [discord.js](https://discord.js.org) library and few more
@@ -50,9 +50,9 @@ the `commands` folder of a game (for commands specific to that game).
 
 This file must export some symbols as described in the following template:
 
-```javascript
-import Hector from "../hector.js";
-import Discord from "discord.js";
+```typescript
+import * as Hector from "hector.js";
+import * as Discord from "discord.js";
 
 export const name = '<name of the command>'; // it's what users will type after the command prefix to invoke your command
 export const description = '<short description>'; // will be displayed when listing commands
@@ -63,11 +63,11 @@ export const help = '<optional notes, remarks or further help>'; // will be disp
 /**
  * Handle the command
  *
- * @param {Hector.Client} client - the bot object
- * @param {Discord.Message} message - the user message that invoked the command
- * @param {Array<String>} args - the arguments the user gave to the command
+ * @param client - the bot object
+ * @param message - the user message that invoked the command
+ * @param args - the arguments the user gave to the command
  */
-export function execute(message, args, client) {
+export function execute(message: Discord.Message, args: Array<string>, client: Hector.Client) {
     // Your code to handle the command
 }
 ```
@@ -88,36 +88,39 @@ least the following:
 
 The `game.js` file must export the following symbols:
 
-```javascript
+```typescript
+import * as Hector from "hector";
+import * as Discord from "discord.js";
+
 export const short_name = '<name>'; // used to identify the game both internally and by users to launch a game
 export const name = '<full name>'; // more elaborate name used when listing games or speaking about it
 export const short_description = '<description>'; // used when listing games
 export const path = '<path>'; // path to the game folder (where `game.js` file and `commands` folder are)
 
 /**
- * Handle a private message from a user
+ * Handle a private message from a user.
  *
- * @param {Hector} client - the bot object
- * @param {Discord.Message} message - the private message
+ * @param client - the bot object
+ * @param message - the private message
  */
-export function handleDM(client, message) {
+export function handleDM(client: Hector.Client, message: Discord.Message) {
 }
 
 /**
  * Initialize needed data for the game
  *
- * @param {Hector} client - the bot object
- * @param {Discord.Message} message - the message that made the bot start that game, if available
+ * @param client - the bot object
+ * @param message - the message that made the bot start that game, if available
  */
-export function load(client, message = null) {
+export function load(client: Hector.Client, message: Discord.Message) {
 }
 
 /**
  * End the current game and clean up our data. This can be called because the game ended or because we want to abort it (so it can happen anytime).
  *
- * @param {Discord.Message} message - the message that made the bot start that game, if available
+ * @param message - the message that made the bot start that game, if available
  */
-export function unload(message = null) {
+export function unload(message: Discord.Message | null = null) {
 }
 ```
 

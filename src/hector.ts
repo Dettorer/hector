@@ -1,15 +1,62 @@
-import Discord from "discord.js";
-import fs from "fs";
+import * as Discord from "discord.js";
+import * as fs from "fs";
 
-export default class Client extends Discord.Client {
+export interface ICommand {
+    name: string;
+    description: string;
+    usage: string;
+    minArgs: number;
+    help: string;
+
+    execute(message: Discord.Message, args: Array<string>, client: Client): void;
+}
+
+export interface IGame {
+    short_name: string;
+    name: string;
+    short_description: string;
+    path: string;
+    commands: Discord.Collection<string, ICommand>;
+    [propName: string]: any;
+
+    start(client: Client, message: Discord.Message): void;
+    handleDM(client: Client, message: Discord.Message): void;
+    load(client: Client, message: Discord.Message | null): void;
+    unload(message: Discord.Message | null): void;
+}
+
+export interface IConfig {
+    token: string;
+    prefix: string;
+    channel: string;
+    commandsPath: string;
+    gamesPath: string;
+}
+
+export class Client extends Discord.Client {
+    commands: Discord.Collection<string, ICommand>;
+    game_commands: Discord.Collection<string, ICommand>;
+
+    available_games: Discord.Collection<string, IGame>;
+    game: IGame | null;
+
+    config: IConfig;
+
+    loadLocked: boolean;
+
+    textBuffer: string;
+
     /**
      * Creates a new Hector bot and load its configuration
      *
      * @constructor
+     * @param config: the bot's configuration
      */
-    constructor() {
+    constructor(config: IConfig) {
         // Call parent's (discord.js') constructor
         super();
+
+        this.config = config;
 
         // Initialize commands collections
         this.commands = new Discord.Collection();
@@ -31,14 +78,11 @@ export default class Client extends Discord.Client {
     /**
      * Load the bot's configuration, register commands and games, and finally set Discord hooks.
      *
-     * @param {String} configPath - The path to configuration file
-     * @param {String} commandsPath - An optional path to load general purpose commands from (those can be loaded later by manually calling `registerCommands`)
-     * @param {String} gamesPath - An optional path to load the games from (those can be loaded later by manually calling `registerGames`)
+     * @param configPath - The path to configuration file
+     * @param commandsPath - An optional path to load general purpose commands from (those can be loaded later by manually calling `registerCommands`)
+     * @param gamesPath - An optional path to load the games from (those can be loaded later by manually calling `registerGames`)
      */
-    async init(configPath, commandsPath = null, gamesPath = null) {
-        // Load the configuration
-        this.config = await import(configPath);
-
+    async init() {
         // Load the general purpose commands and available games
         await this.registerCommands(this.config.commandsPath);
         await this.registerGames(this.config.gamesPath);
@@ -66,7 +110,8 @@ export default class Client extends Discord.Client {
             }
             logLine += `<${message.author.username}`;
             if (message.channel.type === "dm" && message.author.id === this.user.id) {
-                logLine += ` -> ${message.channel.recipient.username}`;
+                var channel = message.channel as Discord.DMChannel;
+                logLine += ` -> ${channel.recipient.username}`;
             }
             logLine += `> ${message.content}`;
             console.log(logLine);
@@ -99,10 +144,10 @@ export default class Client extends Discord.Client {
     /**
      * Find the general purpose bot commands and register their handler in the client (indexed by the command's name, without the command prefix).
      *
-     * @param {String} path - the path in which we'll search for commands to load. If it's relative to the working directory, it must start with "./"
-     * @param {Boolean} [game = false] - weather these commands are specific to the current loaded game or not
+     * @param path - the path in which we'll search for commands to load. If it's relative to the working directory, it must start with "./"
+     * @param game - weather these commands are specific to the current loaded game or not
      */
-    async registerCommands(path, game=false) {
+    async registerCommands(path: string, game: boolean = false) {
         const commandFiles = fs.readdirSync(`${path}`).filter(file => file.endsWith(".js"));
         for (const file of commandFiles) {
             const command = await import(`${path}/${file}`);
@@ -118,9 +163,9 @@ export default class Client extends Discord.Client {
     /**
      * Find the available games and register their handler in the client (indexed by the game's name).
      *
-     * @param {String} path - the path in which we'll search for games to register. If it's relative to the working directory, it must start with "./"
+     * @param path - the path in which we'll search for games to register. If it's relative to the working directory, it must start with "./"
      */
-    async registerGames(path) {
+    async registerGames(path: string) {
         const gameDirs = fs.readdirSync(`${path}`, {withFileTypes: true}).filter(dirent => dirent.isDirectory());
         for (const dir of gameDirs) {
             const game = await import(`${path}/${dir.name}/game.js`);
@@ -132,38 +177,56 @@ export default class Client extends Discord.Client {
     /**
      * Set up a game
      *
-     * @param {String} gameName - the name of the game
-     * @param {Discord.Message} message - the message that prompted the loading of that game, if available
+     * @param gameName - the name of the game
+     * @param message - the message that prompted the loading of that game, if available
      */
-    async loadGame(gameName, message = null) {
-        if (!this.available_games.has(gameName)) {
-            message.reply(`Je ne connais pas le jeu "${gameName}"`);
+    async loadGame(gameName: string, message: Discord.Message | null = null) {
+        let game = this.available_games.get(gameName);
+        if (!game) {
+            if (message) {
+                message.reply(`Je ne connais pas le jeu "${gameName}"`);
+            }
+            throw new Error(`Je ne connais pas le jeu \`${gameName}\``);
         }
-        this.game = this.available_games.get(gameName);
-        console.log(`loading the game "${this.game.name}`);
-        await this.registerCommands(`${this.game.path}/commands`, true);
-        this.game.load(this, message);
+
+        // save the game object
+        this.game = game;
+
+        console.log(`loading the game "${game.name}`);
+        await this.registerCommands(`${game.path}/commands`, true);
+        game.load(this, message);
+
+        return game;
     }
 
     /**
      * Get rid of the game setup
      *
-     * @param {Discord.Message} message - the message that prompted the loading of that game, if available
+     * @param message - the message that prompted the loading of that game, if available
      */
-    unloadGame(message = null) {
+    unloadGame(message: Discord.Message | null = null) {
         if (!this.game) { // No game is loaded
             return console.log("Warning: no game was loaded but unloadGame was called")
         }
 
         console.log(`unloading the game "${this.game.name}`)
-        message.channel.send(`Je ferme le jeu "${this.game.name}"`)
+        if (message) {
+            message.channel.send(`Je ferme le jeu "${this.game.name}"`)
+        }
         this.game.unload(message);
         this.game = null;
         this.game_commands = new Discord.Collection();
     }
 
-    getCommandUsage(command) {
-        var usage = `${this.config.prefix}${command.name}`;
+    /**
+     * Assemble a full usage string for a given command by assembling the
+     * configured command prefix, the command's name and the command's own usage
+     * string.
+     *
+     * @param command - the command for which to assemble the usage string
+     */
+    getCommandUsage(command: ICommand) {
+        let usage = `${this.config.prefix}${command.name}`;
         if (command.usage != "") {
             usage += ` ${command.usage}`;
         }
@@ -171,7 +234,11 @@ export default class Client extends Discord.Client {
         return usage;
     }
 
-    handleDM(message) {
+    /**
+     * Call the current's game DM handler if a game is loaded, explain the
+     * situation to the user otherwise.
+     */
+    handleDM(message: Discord.Message) {
         if (this.game) {
             return this.game.handleDM(this, message);
         }
@@ -181,24 +248,25 @@ export default class Client extends Discord.Client {
 
     /** Clean up a raw command and dispatch it to the correct handler
      *
-     * @param {Discord.Message} message
+     * @param message
     */
-    handleCommand(message) {
-        // Isolate the command name (lowercased) and it's argument (in an array)
+    handleCommand(message: Discord.Message) {
+        // Isolate the command name (lowercased) and its argument (in an array)
         const args = message.content.slice(this.config.prefix.length).split(/ +/);
-        const commandName = args.shift().toLowerCase();
-
-        // Dispatch to the correct handler, if any
-        if (!this.commands.has(commandName) && !this.game_commands.has(commandName)) {
-            return message.reply(`je ne connais pas la commande "${this.config.prefix}${commandName}".`);
+        const rawCommandName = args.shift();
+        if (!rawCommandName) {
+            // The user sent a message starting with our command prefix but not command following, ignore the message
+            return ;
         }
+        const commandName = rawCommandName.toLowerCase();
 
         // Get the correct command
-        var command;
-        if (this.commands.has(commandName)) {
-            command = this.commands.get(commandName);
-        } else {
+        var command = this.commands.get(commandName);
+        if (!command) {
             command = this.game_commands.get(commandName);
+        }
+        if (!command) {
+            return message.reply(`je ne connais pas la commande "${this.config.prefix}${commandName}".`);
         }
 
         if (args.length < command.minArgs) {
@@ -213,18 +281,18 @@ export default class Client extends Discord.Client {
     /**
      * Save some text to form a sendable message for later (without a newline)
      *
-     * @param {String} text
+     * @param text
      */
-    bufferizeText(text) {
+    bufferizeText(text: string) {
         this.textBuffer += text;
     }
 
     /**
      * Save a line of text to form a sendable message for later
      *
-     * @param {String} text
+     * @param text
      */
-    bufferizeLine(text) {
+    bufferizeLine(text: string) {
         this.textBuffer += text + "\n";
     }
 
@@ -248,16 +316,30 @@ export default class Client extends Discord.Client {
         return embed;
     }
 
+    crash(description: string, channel: Discord.TextChannel | Discord.DMChannel | Discord.GroupDMChannel | null = null) {
+        console.error(description);
+        console.error("crashing");
+        if (channel) {
+            channel.send(`Erreur fatale (${description})`);
+        }
+        throw new Error(description);
+    }
+
     /** Log in to discord */
     run() {
         this.login(this.config.token);
     }
 }
 
-// @ts-ignore (vscode thinks this condition will always return false, which isn't the case if the file is directly given to node)
-if (require.main === module) {
-    var client = new Client();
+function startClient(config: IConfig) {
+    let client = new Client(config);
 
-    client.init("./config.json")
+    client.init()
         .then(() => client.run());
+}
+
+if (require.main === module) {
+    // Load the configuration
+    import("./config.json")
+        .then((config: IConfig) => startClient(config));
 }

@@ -1,6 +1,6 @@
-import Hector from "../../hector.js";
-import Discord from "discord.js";
-import Data from "./data.js";
+import * as Hector from "hector";
+import * as Discord from "discord.js";
+import Data from "./data";
 import Lodash from "lodash";
 
 // The game's informations
@@ -12,10 +12,10 @@ export const path = './games/cadavre_exquis';
 /**
  * Compute the index to use for Data's examples for a gender and a number
  *
- * @param {String} gender
- * @param {String} number
+ * @param gender
+ * @param number
  */
-function exampleIndex(gender, number) {
+function exampleIndex(gender: string, number: string) {
     var index = 0;
     if (gender === "masculin") {
         index += 2;
@@ -29,15 +29,32 @@ function exampleIndex(gender, number) {
 /**
  * Send instructions to players after they have been assigned a part in the sentence
  *
- * @param {Hector} client - the bot object
- * @param {Discord.Message} message - the message that made the bot start that game
- * @param {Array<String>} mode - the current game's mode (assigned sentence parts)
+ * @param client - the bot object
+ * @param message - the message that made the bot start that game
+ * @param mode - the current game's mode (assigned sentence parts)
  */
-function sendInstructions(client, message, mode) {
-    for (const playerId of client.game.assignments.keys()) {
-        const assignment = client.game.assignments.get(playerId);
+function sendInstructions(client: Hector.Client, message: Discord.Message, mode: Array<string>) {
+    // ensure the game object has been initialized
+    let game = client.game;
+    if (!game) {
+        return client.crash("cadavre: handleDM: client.game hasn't been initialized");
+    }
+
+    // Ensure we are in a text channel, so we can use its member list
+    const channel = message.channel;
+    if (!(channel instanceof Discord.TextChannel)) {
+        console.warn("cadavre's kick command was called inside a DM, ignoring and warning the user");
+        return message.reply("Cette commande doit être utilisée dans le salon de jeu, pas en privé");
+    }
+
+    for (const playerId of game.assignments.keys()) {
+        const assignment = game.assignments.get(playerId);
+
         // Get the users' handle
-        const player = message.channel.members.get(playerId);
+        const player = channel.members.get(playerId);
+        if (!player) {
+            return client.crash(`cadavre: a player that isn't in the current channel was given an assignment`);
+        }
 
         // Send the instructions
         var partTune = "";
@@ -51,6 +68,10 @@ function sendInstructions(client, message, mode) {
         // Send the example
         for (const part of mode) {
             const partExamples = Data.examples.get(part);
+            if (!partExamples) {
+                const errorMsg = `cadavre: Data doesn't have examples for part ${part}`;
+                return client.crash(errorMsg, channel);
+            }
             const variantIndex = exampleIndex(assignment.gender, assignment.number);
 
             if (part === assignment.part) {
@@ -71,20 +92,26 @@ function sendInstructions(client, message, mode) {
 /**
  * Start a session of the game
  *
- * @param {Hector} client - the bot object
- * @param {Discord.Message} message - the message that made the bot start that game
+ * @param client - the bot object
+ * @param message - the message that made the bot start that game
  */
-export function start(client, message) {
+export function start(client: Hector.Client, message: Discord.Message) {
+    // ensure the game object has been initialized
+    let game = client.game;
+    if (!game) {
+        return client.crash("cadavre: handleDM: client.game hasn't been initialized");
+    }
+
     // load-lock the client and register we're in a game
     client.loadLocked = true;
-    client.game.playing = true;
+    game.playing = true;
     // clone the pendingPlayers array using the spread operator, then shuffle it
-    const players = Lodash.shuffle([...client.game.pendingPlayers]);
+    const players = Lodash.shuffle([...game.pendingPlayers]);
     // and save it in the client as a set
-    client.game.currentPlayers = new Set(players);
+    game.currentPlayers = new Set(players);
 
     // Save the channel we're in for the endGame function
-    client.game.channel = message.channel;
+    game.channel = message.channel;
 
     // Decide gender and number for the sentence.
     const subjectGender = Lodash.sample(["masculin", "féminin"]);
@@ -94,7 +121,11 @@ export function start(client, message) {
 
     // Assign parts to players
     const mode = Data.modes.get(players.length);
-    client.game.assignments = new Discord.Collection();
+    if (!mode) {
+        const errorMsg = `cadavre: no game mode for ${players.length} players, it should have been checked before.`;
+        return client.crash(errorMsg, message.channel);
+    }
+    game.assignments = new Discord.Collection();
     var i = 0;
     for (const part of mode) {
         const player = players[i];
@@ -115,14 +146,14 @@ export function start(client, message) {
             number: number,
             response: null
         };
-        client.game.assignments.set(player, assignment);
+        game.assignments.set(player, assignment);
 
         i++;
     }
 
     // Generate and give instructions to players in DM
     sendInstructions(client, message, mode);
-    client.game.partsMissing = players.length;
+    game.partsMissing = players.length;
 
     // TODO (later) time management
 
@@ -132,22 +163,28 @@ export function start(client, message) {
 /**
  * Display the constructed sentence in the game channel
  *
- * @param {Hector} client - the bot object
+ * @param client - the bot object
  */
-function endGame(client) {
-    client.game.channel.send("Tout le monde m'a donné sa partie ! Voici votre création :");
+function endGame(client: Hector.Client) {
+    // ensure the game object has been initialized
+    let game = client.game;
+    if (!game) {
+        return client.crash("cadavre: endGame: client.game hasn't been initialized");
+    }
+
+    game.channel.send("Tout le monde m'a donné sa partie ! Voici votre création :");
 
     // Merge the sentence
-    for (const assignment of client.game.assignments) {
+    for (const assignment of game.assignments) {
         client.bufferizeText(assignment[1].response + " ");
     }
 
     // Send it in an embed
-    client.game.channel.send(client.flushBufferToEmbed());
+    game.channel.send(client.flushBufferToEmbed());
 
     // Unlock and clean the game
-    client.game.currentPlayers = null;
-    client.game.playing = false;
+    game.currentPlayers = null;
+    game.playing = false;
     client.loadLocked = false;
 }
 
@@ -156,13 +193,19 @@ function endGame(client) {
  * If it's a contribution for an ongoing game, save it.
  * If it's the last contribution we were waiting for, also end the game.
  *
- * @param {Hector} client - the bot object
- * @param {Discord.Message} message - the private message
+ * @param client - the bot object
+ * @param message - the private message
  */
-export function handleDM(client, message) {
+export function handleDM(client: Hector.Client, message: Discord.Message) {
+    // ensure the game object has been initialized
+    let game = client.game;
+    if (!game) {
+        return client.crash("cadavre: handleDM: client.game hasn't been initialized");
+    }
+
     // If this user has no reason to send us a DM right now, tell them why
-    const isPending = client.game.pendingPlayers.has(message.author.id);
-    const isCurrent = client.game.playing && client.game.currentPlayers.has(message.author.id);
+    const isPending = game.pendingPlayers.has(message.author.id);
+    const isCurrent = game.playing && game.currentPlayers.has(message.author.id);
     if (!isPending && !isCurrent) {
         return message.reply(`Vous n'avez pas rejoint de partie, vous pouvez utiliser la commande ${client.config.prefix}play sur le salon de jeu pour rejoindre la prochaîne.`);
     }
@@ -174,17 +217,17 @@ export function handleDM(client, message) {
 
     // Acknowledge the reception to the user
     message.reply("Bien reçu.");
-    var assignment = client.game.assignments.get(message.author.id)
+    var assignment = game.assignments.get(message.author.id)
     if (!assignment.response) {
         // If the user didn't give a contribution for this game, register that
         // there is one less contribution to wait for, and announce it on the
         // game channel
-        client.game.partsMissing--;
-        client.game.channel.send(`${message.author.username} m'a donné sa partie.`);
+        game.partsMissing--;
+        game.channel.send(`${message.author.username} m'a donné sa partie.`);
     }
     assignment.response = message.content;
 
-    if (client.game.partsMissing === 0) {
+    if (game.partsMissing === 0) {
         endGame(client);
     }
 }
@@ -192,18 +235,24 @@ export function handleDM(client, message) {
 /**
  * Initialize needed data for the game
  *
- * @param {Hector} client - the bot object
- * @param {Discord.Message} message - the message that made the bot start that game, if available
+ * @param client - the bot object
+ * @param message - the message that made the bot start that game, if available
  */
-export function load(client, message = null) {
-    client.game.pendingPlayers = new Set(); // Users who want to play in the next game
-    client.game.playing = false; // true if we're currently in a game
+export function load(client: Hector.Client, message: Discord.Message) {
+    // ensure the game object has been initialized
+    let game = client.game;
+    if (!game) {
+        return client.crash("cadavre: load: client.game hasn't been initialized");
+    }
+
+    game.pendingPlayers = new Set(); // Users who want to play in the next game
+    game.playing = false; // true if we're currently in a game
 }
 
 /**
  * End the current game and clean up our data. This can be called because the game ended or because we want to abort it (so it can happen anytime).
  *
- * @param {Discord.Message} message - the message that made the bot start that game, if available
+ * @param message - the message that made the bot start that game, if available
  */
-export function unload(message = null) {
+export function unload(message: Discord.Message | null = null) {
 }

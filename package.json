@@ -18,39 +18,17 @@
         "name": "Paul Hervot"
     },
     "type": "module",
-    "main": "./hector.js",
-    "bin": "./hector.js",
+    "main": "./hector.ts",
+    "bin": "./hector.ts",
     "dependencies": {
+        "@types/lodash": "^4.14.136",
         "@types/node": "^12.7.1",
         "discord.js": "^11.5.1",
-        "lodash": "^4.17.15"
+        "lodash": "^4.17.15",
+        "typescript": "^3.5.3"
     },
     "scripts": {
-        "build": "babel src -d dist --source-maps && cp config.json dist",
-        "start": "npm run build && cd dist && node hector.js"
-    },
-    "devDependencies": {
-        "@babel/cli": "^7.5.5",
-        "@babel/core": "^7.5.5",
-        "@babel/node": "^7.5.5",
-        "@babel/preset-env": "^7.5.5"
-    },
-    "babel": {
-        "presets": [
-            [
-                "@babel/preset-env",
-                {
-                    "targets": {
-                        "node": "current"
-                    }
-                }
-            ]
-        ],
-        "env": {
-            "development": {
-                "sourceMaps": true,
-                "retainLines": true
-            }
-        }
+        "tsc": "npx tsc",
+        "start": "npm run tsc && cd dist && node hector.js"
     }
 }
