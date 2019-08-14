@@ -44,11 +44,11 @@ This implementation of the game is heavily inspired by
 # Development
 ## Add a command
 
-To add a command, create a `.js` file of your choice in the `commands` folder of
+To add a command, create a `.ts` file of your choice in the `commands` folder of
 the project's folder (for general purpose commands available at any time) or in
 the `commands` folder of a game (for commands specific to that game).
 
-This file must export a class named `Command` that extends the abstract class `Hector.Command` defined in `hector.js`.
+This file must export a class named `Command` that extends the abstract class `Hector.Command` defined in `hector.ts`.
 
 A typical command file looks like this:
 
@@ -125,9 +125,9 @@ To add a game, you need to create a folder in the `games` folder containing at
 least the following:
 
 - a `commands` folder in which you'll add commands as described above;
-- a `game.js` file.
+- a `game.ts` file.
 
-The `game.js` file must export a class named `Game` that extends the abstract class `Hector.Game` defined in `hector.ts`.
+The `game.ts` file must export a class named `Game` that extends the abstract class `Hector.Game` defined in `hector.ts`.
 
 A typical game file looks like this:
 
@@ -139,7 +139,7 @@ export class Game extends Hector.Game {
     short_name = '<name>'; // used to identify the game both internally and by users to launch a game
     name = '<full name>'; // more elaborate name used when listing games or speaking about it
     short_description = '<description>'; // used when listing games
-    path = '<path>'; // path to the game folder (where `game.js` file and `commands` folder are)
+    path = '<path>'; // path to the game folder (where `game.ts` file and `commands` folder are)
 
     /**
      * Handle a private message from a user.
