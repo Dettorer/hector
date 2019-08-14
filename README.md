@@ -82,6 +82,43 @@ Given to the `execute` function are:
 - `message`, the [`Discord.Message`](https://discord.js.org/#/docs/main/stable/class/Message) that invoked the command;
 - `args`, a `Array<String>` containing the arguments the user gave;
 
+For game commands, if you want to have more attributes and functions than those
+specified in `Hector.Game`, you'll need to have access to the real game type,
+this can be done with one `import` and the `as` operator. A typical game command
+file looks like this:
+
+```typescript
+import * as Hector from "../hector";
+import * as Cadavre from "../game";
+import * as Discord from "discord.js";
+
+export class Command extends Hector.Command {
+    // The command's informations
+    str = "<name of the command>"; // it's what users will type after the command prefix to invoke your command
+    description = "<short description>"; // will be displayed when listing commands
+    usage = "<usage>"; // will be displayed by the `help` command
+    minArgs = <count>; // number of mandatory arguments for this command
+    help = "<optional notes, remarks or further help>"; // will be displayed by the `help` command
+
+    /**
+     * Handle the command
+     *
+     * @param message - the user message that invoked the command
+     * @param args - the arguments the user gave to the command
+     */
+    execute(message: Discord.Message, args: Array<string>) {
+        // ensure the game object has been initialized
+        let game = this.client.game as Cadavre.Game;
+        if (!game) {
+            return this.client.crash("<game name>: <command name>: this.client.game hasn't been initialized");
+        }
+
+        // Your code to handle the command
+        // You can acces the bot object with `this.client`
+    }
+}
+```
+
 ## Add a game
 
 To add a game, you need to create a folder in the `games` folder containing at
@@ -90,42 +127,46 @@ least the following:
 - a `commands` folder in which you'll add commands as described above;
 - a `game.js` file.
 
-The `game.js` file must export the following symbols:
+The `game.js` file must export a class named `Game` that extends the abstract class `Hector.Game` defined in `hector.ts`.
+
+A typical game file looks like this:
 
 ```typescript
-import * as Hector from "hector";
+import * as Hector from "../../hector";
 import * as Discord from "discord.js";
 
-export const short_name = '<name>'; // used to identify the game both internally and by users to launch a game
-export const name = '<full name>'; // more elaborate name used when listing games or speaking about it
-export const short_description = '<description>'; // used when listing games
-export const path = '<path>'; // path to the game folder (where `game.js` file and `commands` folder are)
+export class Game extends Hector.Game {
+    short_name = '<name>'; // used to identify the game both internally and by users to launch a game
+    name = '<full name>'; // more elaborate name used when listing games or speaking about it
+    short_description = '<description>'; // used when listing games
+    path = '<path>'; // path to the game folder (where `game.js` file and `commands` folder are)
 
-/**
- * Handle a private message from a user.
- *
- * @param client - the bot object
- * @param message - the private message
- */
-export function handleDM(client: Hector.Client, message: Discord.Message) {
-}
+    /**
+     * Handle a private message from a user.
+     *
+     * @param message - the private message
+     */
+    handleDM(message: Discord.Message) {
+    }
 
-/**
- * Initialize needed data for the game
- *
- * @param client - the bot object
- * @param message - the message that made the bot start that game, if available
- */
-export function load(client: Hector.Client, message: Discord.Message) {
-}
+    /**
+     * Initialize needed data for the game
+     *
+     * @param client - the bot object
+     * @param message - the message that made the bot start that game, if available
+     */
+    load(client: Hector.Client, message: Discord.Message) {
+    }
 
-/**
- * End the current game and clean up our data. This can be called because the game ended or because we want to abort it (so it can happen anytime).
- *
- * @param message - the message that made the bot start that game, if available
- */
-export function unload(message: Discord.Message | null = null) {
-}
+    /**
+     * End the current game and clean up our data. This can be called because the game ended or because we want to abort it (so it can happen anytime).
+     *
+     * @param message - the message that made the bot start that game, if available
+     */
+    unload(message: Discord.Message | null = null) {
+    }
+
+    // At any point, you can acces the bot object with `this.client`
 ```
 
 If at any point, your game is in a state that makes it unsafe to unload, please

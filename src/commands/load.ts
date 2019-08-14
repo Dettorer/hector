@@ -24,7 +24,7 @@ export class Command extends Hector.Command {
         }
         else {
             this.client.loadGame(args[0], message)
-            .then((game: Hector.IGame) => message.channel.send(`J'ouvre le jeu \`${game.name}\` !`))
+            .then((game: Hector.Game) => message.channel.send(`J'ouvre le jeu \`${game.name}\` !`))
             .catch((error: Error) => message.reply(error.message));
         }
     }

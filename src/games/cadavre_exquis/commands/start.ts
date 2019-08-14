@@ -1,4 +1,5 @@
 import * as Hector from "../../../hector";
+import * as Cadavre from "../game";
 import * as Discord from "discord.js";
 
 export class Command extends Hector.Command {
@@ -18,7 +19,7 @@ export class Command extends Hector.Command {
      */
     execute(message: Discord.Message, args: Array<string>) {
         // ensure the game object has been initialized
-        let game = this.client.game;
+        let game = this.client.game as Cadavre.Game;
         if (!game) {
             return this.client.crash("cadavre: handleDM: this.client.game hasn't been initialized");
         }
@@ -33,6 +34,6 @@ export class Command extends Hector.Command {
             return message.reply("Désolé, il faut au moins trois personnes pour jouer.");
         }
 
-        game.start(this.client, message);
+        game.start(message);
     }
 }

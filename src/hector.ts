@@ -17,18 +17,21 @@ export abstract class Command {
     }
 }
 
-export interface IGame {
-    short_name: string;
-    name: string;
-    short_description: string;
-    path: string;
-    commands: Discord.Collection<string, Command>;
-    [propName: string]: any;
+export abstract class Game {
+    abstract readonly short_name: string;
+    abstract readonly name: string;
+    abstract readonly short_description: string;
+    abstract readonly path: string;
 
-    start(client: Client, message: Discord.Message): void;
-    handleDM(client: Client, message: Discord.Message): void;
-    load(client: Client, message: Discord.Message | null): void;
-    unload(message: Discord.Message | null): void;
+    abstract handleDM(message: Discord.Message): void;
+    abstract load(message: Discord.Message | null): void;
+    abstract unload(message: Discord.Message | null): void;
+
+    readonly client: Client;
+
+    constructor(client: Client) {
+        this.client = client;
+    }
 }
 
 export interface IConfig {
@@ -43,8 +46,8 @@ export class Client extends Discord.Client {
     commands: Discord.Collection<string, Command>;
     game_commands: Discord.Collection<string, Command>;
 
-    available_games: Discord.Collection<string, IGame>;
-    game: IGame | null;
+    available_games: Discord.Collection<string, Game>;
+    game: Game | null;
 
     config: IConfig;
 
@@ -175,7 +178,8 @@ export class Client extends Discord.Client {
     async registerGames(path: string) {
         const gameDirs = fs.readdirSync(`${path}`, {withFileTypes: true}).filter(dirent => dirent.isDirectory());
         for (const dir of gameDirs) {
-            const game = await import(`${path}/${dir.name}/game.js`);
+            const mod = await import(`${path}/${dir.name}/game.js`);
+            const game = new mod.Game(this);
 
             this.available_games.set(game.short_name, game);
         }
@@ -201,7 +205,7 @@ export class Client extends Discord.Client {
 
         console.log(`loading the game "${game.name}`);
         await this.registerCommands(`${game.path}/commands`, true);
-        game.load(this, message);
+        game.load(message);
 
         return game;
     }
@@ -247,7 +251,7 @@ export class Client extends Discord.Client {
      */
     handleDM(message: Discord.Message) {
         if (this.game) {
-            return this.game.handleDM(this, message);
+            return this.game.handleDM(message);
         }
 
         return message.reply("Aucun jeu n'est chargé, je ne regarde pas les messages privés.")

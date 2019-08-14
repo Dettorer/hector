@@ -1,4 +1,5 @@
 import * as Hector from "../../../hector";
+import * as Cadavre from "../game";
 import * as Discord from "discord.js";
 
 export class Command extends Hector.Command {
@@ -17,7 +18,7 @@ export class Command extends Hector.Command {
      */
     execute(message: Discord.Message, args: Array<string>) {
         // ensure the game object has been initialized
-        let game = this.client.game;
+        let game = this.client.game as Cadavre.Game;
         if (!game) {
             return this.client.crash("cadavre: loading the game but this.client.game hasn't been initialized");
         }
