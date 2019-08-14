@@ -1,79 +1,79 @@
-import * as Hector from "hector";
+import * as Hector from "../hector";
 import * as Discord from "discord.js";
 
-// The command's informations
-export const name = "help";
-export const description = "liste les commandes ou affiche leur aide et leur usage";
-export const usage = "[<commande>]";
-export const minArgs = 0;
-export const help = "note : dans les usages, des crochets \"[]\" signifient qu'un paramètre est optionel, des chevrons \"<>\" signifie qu'il faut remplacer cette partie par quelque chose, sans garder les chevrons";
+export class Command extends Hector.Command {
+    // The command's informations
+    str = "help";
+    description = "liste les commandes ou affiche leur aide et leur usage";
+    usage = "[<commande>]";
+    minArgs = 0;
+    help = "note : dans les usages, des crochets \"[]\" signifient qu'un paramètre est optionel, des chevrons \"<>\" signifie qu'il faut remplacer cette partie par quelque chose, sans garder les chevrons";
 
-/**
- * Write a list of available commands on the given channel
- *
- * @param client - the bot object
- * @param channel - the channel in which to list commands
- */
-function listCommands(client: Hector.Client, channel: Discord.TextChannel|Discord.DMChannel|Discord.GroupDMChannel) {
-    // Bufferize general commands
-    for (var command of client.commands.array()) {
-        client.bufferizeLine(`\`${client.config.prefix}${command.name}\` : ${command.description}`)
-    }
-
-    // Send them in an embed
-    var embed = client.flushBufferToEmbed();
-    embed.setTitle("Les commandes générales sont :");
-    channel.send(embed);
-
-    if (client.game) { // if a game is loaded, list its commands
-        // Bufferize the current game commands
-        for (var command of client.game_commands.array()) {
-            client.bufferizeLine(`\`${client.config.prefix}${command.name}\` : ${command.description}`)
+    /**
+     * Write a list of available commands on the given channel
+     *
+     * @param channel - the channel in which to list commands
+     */
+    listCommands(channel: Discord.TextChannel|Discord.DMChannel|Discord.GroupDMChannel) {
+        // Bufferize general commands
+        for (var command of this.client.commands.array()) {
+            this.client.bufferizeLine(`\`${this.client.config.prefix}${command.str}\` : ${command.description}`)
         }
 
         // Send them in an embed
-        embed = client.flushBufferToEmbed();
-        embed.setTitle(`Les commandes du jeu en cours (${client.game.name}) sont :`)
+        var embed = this.client.flushBufferToEmbed();
+        embed.setTitle("Les commandes générales sont :");
         channel.send(embed);
-    }
-}
 
-/**
- * Handle the command
- *
- * @param client - the bot object
- * @param message - the user message that invoked the command
- * @param args - the arguments the user gave to the command
- */
-export function execute(message: Discord.Message, args: Array<string>, client: Hector.Client) {
-    // If no argument is given, give the list of available commands
-    if (!args.length) {
-        return listCommands(client, message.channel);
+        if (this.client.game) { // if a game is loaded, list its commands
+            // Bufferize the current game commands
+            for (var command of this.client.game_commands.array()) {
+                this.client.bufferizeLine(`\`${this.client.config.prefix}${command.str}\` : ${command.description}`)
+            }
+
+            // Send them in an embed
+            embed = this.client.flushBufferToEmbed();
+            embed.setTitle(`Les commandes du jeu en cours (${this.client.game.name}) sont :`)
+            channel.send(embed);
+        }
     }
 
-    // Get the correct command
-    let command = client.commands.get(args[0]);
-    if (!command) { // it's not a general purpose command, it may be a command defined by the current loaded game
-        command = client.game_commands.get(args[0]);
-    }
-    if (!command) { // If the requested command doesn't exist, inform the user unambiguously (we don't want them to think that the "help" command doesn't exist)
-        return message.channel.send(`Je ne connais pas la commande \`${client.config.prefix}${args[0]}\`, je ne peux donc pas afficher son aide.`);
-    }
+    /**
+     * Handle the command
+     *
+     * @param message - the user message that invoked the command
+     * @param args - the arguments the user gave to the command
+     */
+    execute(message: Discord.Message, args: Array<string>) {
+        // If no argument is given, give the list of available commands
+        if (!args.length) {
+            return this.listCommands(message.channel);
+        }
 
-    // If the requested command doesn't have any bit of documentation, inform the user and encourage them to reprimand the devs.
-    if (!command.usage && !command.help && !command.description) {
-        return message.channel.send(`La commande \`${client.config.prefix}${args[0]}\` existe mais n'a aucune aide, vous pouvez aller insulter la personne qui l'a écrite.`);
-    }
+        // Get the correct command
+        let command = this.client.commands.get(args[0]);
+        if (!command) { // it's not a general purpose command, it may be a command defined by the current loaded game
+            command = this.client.game_commands.get(args[0]);
+        }
+        if (!command) { // If the requested command doesn't exist, inform the user unambiguously (we don't want them to think that the "help" command doesn't exist)
+            return message.channel.send(`Je ne connais pas la commande \`${this.client.config.prefix}${args[0]}\`, je ne peux donc pas afficher son aide.`);
+        }
 
-    // Print the command's usage, then its short description and its help.
-    client.bufferizeLine(`**usage :** \`${client.getCommandUsage(command)}\``);
-    client.bufferizeLine(command.description);
-    if (command.help != "") {
-        client.bufferizeLine("");
-        client.bufferizeLine(command.help);
-    }
+        // If the requested command doesn't have any bit of documentation, inform the user and encourage them to reprimand the devs.
+        if (!command.usage && !command.help && !command.description) {
+            return message.channel.send(`La commande \`${this.client.config.prefix}${args[0]}\` existe mais n'a aucune aide, vous pouvez aller insulter la personne qui l'a écrite.`);
+        }
 
-    var embed = client.flushBufferToEmbed();
-    embed.setTitle(`Commande \`${client.config.prefix}${command.name}\``);
-    return message.channel.send(embed);
+        // Print the command's usage, then its short description and its help.
+        this.client.bufferizeLine(`**usage :** \`${this.client.getCommandUsage(command)}\``);
+        this.client.bufferizeLine(command.description);
+        if (command.help != "") {
+            this.client.bufferizeLine("");
+            this.client.bufferizeLine(command.help);
+        }
+
+        var embed = this.client.flushBufferToEmbed();
+        embed.setTitle(`Commande \`${this.client.config.prefix}${command.str}\``);
+        return message.channel.send(embed);
+    }
 }

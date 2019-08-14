@@ -1,14 +1,20 @@
 import * as Discord from "discord.js";
 import * as fs from "fs";
 
-export interface ICommand {
-    name: string;
-    description: string;
-    usage: string;
-    minArgs: number;
-    help: string;
+export abstract class Command {
+    abstract readonly str: string;
+    abstract readonly description: string;
+    abstract readonly usage: string;
+    abstract readonly minArgs: number;
+    abstract readonly help: string;
 
-    execute(message: Discord.Message, args: Array<string>, client: Client): void;
+    abstract execute(message: Discord.Message, args: Array<string>): void;
+
+    readonly client: Client;
+
+    constructor(client: Client) {
+        this.client = client;
+    }
 }
 
 export interface IGame {
@@ -16,7 +22,7 @@ export interface IGame {
     name: string;
     short_description: string;
     path: string;
-    commands: Discord.Collection<string, ICommand>;
+    commands: Discord.Collection<string, Command>;
     [propName: string]: any;
 
     start(client: Client, message: Discord.Message): void;
@@ -34,8 +40,8 @@ export interface IConfig {
 }
 
 export class Client extends Discord.Client {
-    commands: Discord.Collection<string, ICommand>;
-    game_commands: Discord.Collection<string, ICommand>;
+    commands: Discord.Collection<string, Command>;
+    game_commands: Discord.Collection<string, Command>;
 
     available_games: Discord.Collection<string, IGame>;
     game: IGame | null;
@@ -142,7 +148,7 @@ export class Client extends Discord.Client {
     }
 
     /**
-     * Find the general purpose bot commands and register their handler in the client (indexed by the command's name, without the command prefix).
+     * Find the general commands and register their handler in the client (indexed by the command's name, without the command prefix).
      *
      * @param path - the path in which we'll search for commands to load. If it's relative to the working directory, it must start with "./"
      * @param game - weather these commands are specific to the current loaded game or not
@@ -150,12 +156,13 @@ export class Client extends Discord.Client {
     async registerCommands(path: string, game: boolean = false) {
         const commandFiles = fs.readdirSync(`${path}`).filter(file => file.endsWith(".js"));
         for (const file of commandFiles) {
-            const command = await import(`${path}/${file}`);
+            const mod = await import(`${path}/${file}`);
+            const command = new mod.Command(this);
 
             if (game) {
-                this.game_commands.set(command.name, command);
+                this.game_commands.set(command.str, command);
             } else {
-                this.commands.set(command.name, command);
+                this.commands.set(command.str, command);
             }
         }
     }
@@ -225,8 +232,8 @@ export class Client extends Discord.Client {
      *
      * @param command - the command for which to assemble the usage string
      */
-    getCommandUsage(command: ICommand) {
-        let usage = `${this.config.prefix}${command.name}`;
+    getCommandUsage(command: Command) {
+        let usage = `${this.config.prefix}${command.str}`;
         if (command.usage != "") {
             usage += ` ${command.usage}`;
         }
@@ -275,7 +282,7 @@ export class Client extends Discord.Client {
 
             return message.reply(this.flushBufferToString());
         }
-        command.execute(message, args, this);
+        command.execute(message, args);
     }
 
     /**

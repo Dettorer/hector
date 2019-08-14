@@ -48,27 +48,32 @@ To add a command, create a `.js` file of your choice in the `commands` folder of
 the project's folder (for general purpose commands available at any time) or in
 the `commands` folder of a game (for commands specific to that game).
 
-This file must export some symbols as described in the following template:
+This file must export a class named `Command` that extends the abstract class `Hector.Command` defined in `hector.js`.
+
+A typical command file looks like this:
 
 ```typescript
-import * as Hector from "hector.js";
+import * as Hector from "../hector";
 import * as Discord from "discord.js";
 
-export const name = '<name of the command>'; // it's what users will type after the command prefix to invoke your command
-export const description = '<short description>'; // will be displayed when listing commands
-export const usage = '<usage>'; // will be displayed by the `help` command
-export const minArgs = <count>; // number of mandatory arguments for this command
-export const help = '<optional notes, remarks or further help>'; // will be displayed by the `help` command
+export class Command extends Hector.Command {
+    // The command's informations
+    str = "<name of the command>"; // it's what users will type after the command prefix to invoke your command
+    description = "<short description>"; // will be displayed when listing commands
+    usage = "<usage>"; // will be displayed by the `help` command
+    minArgs = <count>; // number of mandatory arguments for this command
+    help = "<optional notes, remarks or further help>"; // will be displayed by the `help` command
 
-/**
- * Handle the command
- *
- * @param client - the bot object
- * @param message - the user message that invoked the command
- * @param args - the arguments the user gave to the command
- */
-export function execute(message: Discord.Message, args: Array<string>, client: Hector.Client) {
-    // Your code to handle the command
+    /**
+     * Handle the command
+     *
+     * @param message - the user message that invoked the command
+     * @param args - the arguments the user gave to the command
+     */
+    execute(message: Discord.Message, args: Array<string>) {
+        // Your code to handle the command
+        // You can acces the bot object with `this.client`
+    }
 }
 ```
 
@@ -76,7 +81,6 @@ Given to the `execute` function are:
 
 - `message`, the [`Discord.Message`](https://discord.js.org/#/docs/main/stable/class/Message) that invoked the command;
 - `args`, a `Array<String>` containing the arguments the user gave;
-- `client`, a `Hector.Client` object, extending [`Discord.Client`](https://discord.js.org/#/docs/main/stable/class/Client), see discord.js' documentation and `hector.js` file for available methods.
 
 ## Add a game
 
