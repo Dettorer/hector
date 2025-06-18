@@ -61,9 +61,9 @@ export class Client extends Discord.Client {
      * @constructor
      * @param config: the bot's configuration
      */
-    constructor(config: IConfig) {
+    constructor(config: IConfig, options: Discord.ClientOptions) {
         // Call parent's (discord.js') constructor
-        super();
+        super(options);
 
         this.config = config;
 
@@ -102,25 +102,25 @@ export class Client extends Discord.Client {
     /** Set "ready" and "message" hooks */
     setHooks() {
         // When the bot is ready, log it.
-        this.once("ready", () => {
-            console.log("Ready!");
+        this.once(Discord.Events.ClientReady, client => {
+            console.log(`Ready! Logged in as ${client.user.tag}`);
         });
 
-        this.on("message", message => {
+        this.on(Discord.Events.MessageCreate, message => {
             // Ignore the message if not in the correct channel, or a private message
-            if (message.channel.type !== "dm" && message.channel.id !== this.config.channel) {
+            if (!message.channel.isDMBased() && message.channel.id !== this.config.channel) {
                 return;
             }
 
-            // Log every message that goes to our channel
+            // Log every message received on channels we listen for
             var logLine = "";
-            if (message.channel.type === "dm") {
+            if (message.channel.isDMBased()) {
                 logLine += "DM ";
             }
             logLine += `<${message.author.username}`;
-            if (message.channel.type === "dm" && message.author.id === this.user.id) {
+            if (message.channel.isDMBased() && message.author.id === this.user?.id) {
                 var channel = message.channel as Discord.DMChannel;
-                logLine += ` -> ${channel.recipient.username}`;
+                logLine += ` -> ${channel.recipient?.username}`;
             }
             logLine += `> ${message.content}`;
             console.log(logLine);
@@ -139,7 +139,7 @@ export class Client extends Discord.Client {
             }
 
             // If it's a private message, send it to the right handler
-            if (message.channel.type === "dm") {
+            if (message.channel.isDMBased()) {
                 return this.handleDM(message);
             }
 
@@ -221,7 +221,7 @@ export class Client extends Discord.Client {
         }
 
         console.log(`unloading the game "${this.game.name}`)
-        if (message) {
+        if (message && message.channel.isSendable()) {
             message.channel.send(`Je ferme le jeu "${this.game.name}"`)
         }
         this.game.unload(message);
@@ -318,8 +318,7 @@ export class Client extends Discord.Client {
     /** Get the content of the text buffer in a new `Discord.richEmbed` and reset it */
     flushBufferToEmbed() {
         // Create the embed and fill its content with our buffer
-        var embed = new Discord.RichEmbed();
-        embed.setDescription(this.textBuffer);
+        var embed = new Discord.EmbedBuilder().setDescription(this.textBuffer);
 
         // reset the buffer
         this.textBuffer = "";
@@ -327,12 +326,10 @@ export class Client extends Discord.Client {
         return embed;
     }
 
-    crash(description: string, channel: Discord.TextChannel | Discord.DMChannel | Discord.GroupDMChannel | null = null) {
+    crash(description: string, channel: Discord.SendableChannels | null = null) {
         console.error(description);
         console.error("crashing");
-        if (channel) {
-            channel.send(`Erreur fatale (${description})`);
-        }
+        channel?.send(`Erreur fatale (${description})`);
         throw new Error(description);
     }
 
@@ -343,7 +340,18 @@ export class Client extends Discord.Client {
 }
 
 function startClient(config: IConfig) {
-    let client = new Client(config);
+    let client = new Client(config, {
+        intents: [
+            Discord.GatewayIntentBits.Guilds,
+            Discord.GatewayIntentBits.GuildMessages,
+            Discord.GatewayIntentBits.DirectMessages,
+            Discord.GatewayIntentBits.MessageContent,
+            Discord.GatewayIntentBits.GuildMembers,
+	],
+        partials: [
+            Discord.Partials.Channel,
+        ]
+    });
 
     client.init()
         .then(() => client.run());

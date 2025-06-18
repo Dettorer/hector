@@ -16,6 +16,7 @@ export class Command extends Hector.Command {
      * @param args - the arguments the user gave to the command
      */
     execute(message: Discord.Message, args: Array<string>) {
-        return message.channel.send(args.join(' '));
+        if (message.channel.isSendable())
+            return message.channel.send(args.join(' '));
     }
 }

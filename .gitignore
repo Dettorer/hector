@@ -63,8 +63,5 @@ typings/
 # bot's config file
 config.json
 
-# npm package locking file
-package-lock.json
-
 # files compiled by babel
 dist

@@ -17,15 +17,14 @@
     "author": {
         "name": "Paul Hervot"
     },
-    "type": "module",
     "main": "./hector.ts",
     "bin": "./hector.ts",
     "dependencies": {
-        "@types/lodash": "^4.14.136",
-        "@types/node": "^12.7.1",
-        "discord.js": "^11.5.1",
-        "lodash": "^4.17.15",
-        "typescript": "^3.5.3"
+        "@types/lodash": "4",
+        "@types/node": "24",
+        "discord.js": "14",
+        "lodash": "4",
+        "typescript": "5"
     },
     "scripts": {
         "tsc": "npx tsc",

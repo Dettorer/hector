@@ -17,6 +17,9 @@ export class Command extends Hector.Command {
      * @param args - the arguments the user gave to the command
      */
     execute(message: Discord.Message, args: Array<string>) {
+        if (!message.channel.isSendable())
+            return
+
         // ensure the game object has been initialized
         let game = this.client.game as Cadavre.Game;
         if (!game) {

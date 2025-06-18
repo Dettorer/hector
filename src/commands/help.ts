@@ -14,27 +14,27 @@ export class Command extends Hector.Command {
      *
      * @param channel - the channel in which to list commands
      */
-    listCommands(channel: Discord.TextChannel|Discord.DMChannel|Discord.GroupDMChannel) {
+    listCommands(channel: Discord.SendableChannels) {
         // Bufferize general commands
-        for (var command of this.client.commands.array()) {
+        for (var command of this.client.commands.values()) {
             this.client.bufferizeLine(`\`${this.client.config.prefix}${command.str}\` : ${command.description}`)
         }
 
         // Send them in an embed
         var embed = this.client.flushBufferToEmbed();
         embed.setTitle("Les commandes générales sont :");
-        channel.send(embed);
+        channel.send({ embeds: [embed] });
 
         if (this.client.game) { // if a game is loaded, list its commands
             // Bufferize the current game commands
-            for (var command of this.client.game_commands.array()) {
+            for (var command of this.client.game_commands.values()) {
                 this.client.bufferizeLine(`\`${this.client.config.prefix}${command.str}\` : ${command.description}`)
             }
 
             // Send them in an embed
             embed = this.client.flushBufferToEmbed();
             embed.setTitle(`Les commandes du jeu en cours (${this.client.game.name}) sont :`)
-            channel.send(embed);
+            channel.send({ embeds: [embed] });
         }
     }
 
@@ -46,6 +46,9 @@ export class Command extends Hector.Command {
      */
     execute(message: Discord.Message, args: Array<string>) {
         // If no argument is given, give the list of available commands
+        if (!message.channel.isSendable())
+            return
+
         if (!args.length) {
             return this.listCommands(message.channel);
         }
@@ -74,6 +77,6 @@ export class Command extends Hector.Command {
 
         var embed = this.client.flushBufferToEmbed();
         embed.setTitle(`Commande \`${this.client.config.prefix}${command.str}\``);
-        return message.channel.send(embed);
+        return message.channel.send({ embeds: [embed] });
     }
 }

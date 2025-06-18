@@ -19,6 +19,7 @@ export class Command extends Hector.Command {
         this.client.bufferizeLine("Hector est un bot discord développé par Paul \"Dettorer\" Hervot sous license AGPLv3.");
         this.client.bufferizeLine("Source, informations et signalement de bugs sur github : https://github.com/Dettorer/hector");
 
-        return message.channel.send(this.client.flushBufferToString());
+        if (message.channel.isSendable())
+            return message.channel.send(this.client.flushBufferToString());
     }
 }

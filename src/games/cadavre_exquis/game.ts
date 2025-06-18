@@ -50,6 +50,9 @@ export class Game extends Hector.Game {
      * @param mode - the current game's mode (assigned sentence parts)
      */
     sendInstructions(message: Discord.Message, mode: Array<string>) {
+        if (!message.channel.isSendable())
+            return
+
         for (const playerId of this.assignments.keys()) {
             // Ensure we are in a text channel, so we can use its member list
             const channel = message.channel;
@@ -98,7 +101,7 @@ export class Game extends Hector.Game {
                 }
             }
             player.send(instructions);
-            player.send(this.client.flushBufferToEmbed());
+            player.send({ embeds: [this.client.flushBufferToEmbed()] });
         }
     }
 
@@ -108,7 +111,10 @@ export class Game extends Hector.Game {
      * @param message - the message that made the bot start that game
      */
     start(message: Discord.Message) {
-        // Ensure we are in a text channel
+        if (!message.channel.isSendable())
+            return
+
+        // Ensure we are in a sendable text channel
         const channel = message.channel;
         if (!(channel instanceof Discord.TextChannel)) {
             console.warn("cadavre's kick command was called inside a DM, ignoring and warning the user");
@@ -190,7 +196,7 @@ export class Game extends Hector.Game {
         }
 
         // Send it in an embed
-        this.channel.send(this.client.flushBufferToEmbed());
+        this.channel.send({ embeds: [this.client.flushBufferToEmbed()] });
 
         // Unlock and clean the game
         this.client.loadLocked = false;
@@ -208,6 +214,9 @@ export class Game extends Hector.Game {
      * @param message - the private message
      */
     handleDM(message: Discord.Message) {
+        if (!message.channel.isSendable())
+            return
+
         // If this user has no reason to send us a DM right now, tell them why
         const isPending = this.pendingPlayers.has(message.author.id);
         const isCurrent = this.playing && this.currentPlayers.has(message.author.id);

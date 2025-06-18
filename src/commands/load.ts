@@ -16,6 +16,9 @@ export class Command extends Hector.Command {
      * @param args - the arguments the user gave to the command
      */
     execute(message: Discord.Message, args: Array<string>) {
+        if (!message.channel.isSendable())
+            return
+
         if (this.client.game && this.client.loadLocked) {
             return message.reply(`Un jeu (${this.client.game.name}) est en cours, il faut d'abord le quitter.`); // TODO: make an abort command that kills a game and unload it
         }
@@ -24,7 +27,10 @@ export class Command extends Hector.Command {
         }
         else {
             this.client.loadGame(args[0], message)
-            .then((game: Hector.Game) => message.channel.send(`J'ouvre le jeu \`${game.name}\` !`))
+            .then((game: Hector.Game) => {
+                if (message.channel.isSendable())
+                    message.channel.send(`J'ouvre le jeu \`${game.name}\` !`)
+            })
             .catch((error: Error) => message.reply(error.message));
         }
     }

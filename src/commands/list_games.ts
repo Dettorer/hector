@@ -16,11 +16,14 @@ export class Command extends Hector.Command {
      * @param args - the arguments the user gave to the command
      */
     execute(message: Discord.Message, args: Array<string>) {
-        for (var game of this.client.available_games.array()) {
+        if (!message.channel.isSendable())
+            return
+
+        for (var game of this.client.available_games.values()) {
             this.client.bufferizeText(`\`${game.short_name}\` : **${game.name}** - ${game.short_description}`);
         }
         var embed = this.client.flushBufferToEmbed();
         embed.setTitle("Je connais les jeux suivants :");
-        message.channel.send(embed);
+        message.channel.send({ embeds: [embed] });
     }
 }
