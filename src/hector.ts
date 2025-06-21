@@ -1,5 +1,6 @@
 import * as Discord from "discord.js";
 import * as fs from "fs";
+import {NullLiteral} from "typescript";
 
 export abstract class Command {
     abstract readonly str: string;
@@ -37,6 +38,7 @@ export abstract class Game {
 export interface IConfig {
     token: string;
     prefix: string;
+    guild: string;
     channel: string;
     commandsPath: string;
     gamesPath: string;
@@ -50,6 +52,7 @@ export class Client extends Discord.Client {
     game: Game | null;
 
     config: IConfig;
+    channel: Discord.SendableChannels | null;
 
     loadLocked: boolean;
 
@@ -82,6 +85,8 @@ export class Client extends Discord.Client {
 
         // Buffer for `bufferizeText`, `flushBufferToString` and `flushBufferToRichEmbed`
         this.textBuffer = "";
+
+        this.channel = null;
     }
 
     /**
@@ -104,6 +109,14 @@ export class Client extends Discord.Client {
         // When the bot is ready, log it.
         this.once(Discord.Events.ClientReady, client => {
             console.log(`Ready! Logged in as ${client.user.tag}`);
+
+            // Set the configured channel
+            const channel = this.channels.cache.get(this.config.channel);
+            if (channel === undefined)
+                throw "cannot find the configured channel"
+            else if (!channel.isSendable())
+                throw "the configured channel is not sendable";
+            this.channel = channel;
         });
 
         this.on(Discord.Events.MessageCreate, message => {
@@ -166,6 +179,14 @@ export class Client extends Discord.Client {
                 this.game_commands.set(command.str, command);
             } else {
                 this.commands.set(command.str, command);
+            }
+
+            // If the command has an initialization function, schedule it to be
+            // run when the client is ready.
+            if (typeof command['init'] === 'function') {
+                this.once(Discord.Events.ClientReady, async () => {
+                    await command.init();
+                });
             }
         }
     }
@@ -347,10 +368,17 @@ function startClient(config: IConfig) {
             Discord.GatewayIntentBits.DirectMessages,
             Discord.GatewayIntentBits.MessageContent,
             Discord.GatewayIntentBits.GuildMembers,
-	],
+        ],
         partials: [
             Discord.Partials.Channel,
-        ]
+        ],
+        allowedMentions: {
+            parse: [
+                Discord.AllowedMentionsTypes.Everyone,
+                Discord.AllowedMentionsTypes.Role,
+                Discord.AllowedMentionsTypes.User,
+            ],
+        },
     });
 
     client.init()

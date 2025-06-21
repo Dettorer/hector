@@ -1,6 +1,7 @@
 {
     "token": "<a valid discord API token>",
     "prefix": "!",
+    "guild": "<id of the server hector should watch> (see https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-)",
     "channel": "<id of the channel hector should watch (see https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-)>"
     "commandsPath": "./commands",
     "gamesPath": "./games"
