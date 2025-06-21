@@ -62,7 +62,7 @@ export class RemindersFile {
         }
         reminders.push({id: id, date: date.toISOString(), username: username, message: message});
         this.saveToFile(reminders);
-        return reminders.length - 1;
+        return id;
     }
 
     static async removeReminder(id: number): Promise<ReminderSerializeData | null> {
