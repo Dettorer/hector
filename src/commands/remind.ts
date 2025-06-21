@@ -211,14 +211,14 @@ export class Command extends Hector.Command {
             return channel.send(`Je n'ai pas compris à quelle date le rappel devait être fait`);
         }
 
-        const ping_message = args[3];
+        const ping_message = args.slice(3).join(" ");
 
         const saveFileId = await RemindersFile.addReminder(ping_date, ping_username, ping_message);
         const delay = await this.launchReminder(ping_date, ping_user, ping_message, saveFileId)
         const human_delay = this.humanReadableDurationFromNow(delay);
 
         return channel.send(
-            `Ok, j'ai enregistré le rappel numéro ${saveFileId} :`
+            `Ok, j'ai enregistré le rappel numéro ${saveFileId} : `
             + `je pingerai ${ping_username} avec le message "${ping_message}" à la date suivante : `
             + `${ping_date.toString()} (dans ${human_delay})`
         )
