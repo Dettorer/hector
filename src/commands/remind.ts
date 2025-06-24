@@ -1,4 +1,5 @@
 import fs from "fs";
+import { setTimeout } from "timers";
 import {isError} from "lodash";
 import * as Hector from "../hector";
 import * as Discord from "discord.js";
@@ -15,6 +16,41 @@ export function formatReminderData(data: ReminderSerializeData, dateFormater: In
     return `rappel n°${data.id} pour ${data.username}, le ${date_str}: "${data.message}"`;
 }
 
+function capDelayForSetTimeout(delay: number): number {
+    // XXX: see the other "XXX" comments in the `Command.remind` and `Command.launchReminder`.
+    const limit = Math.pow(2, 31) - 1;
+    return Math.min(limit, delay);}
+
+function remind(user: Discord.User | String, message: String, date: Date, saveFileId: number, channel: Discord.SendableChannels) {
+    /* XXX: `remind` may have been called earlier than the requested date.
+    * This is because `setTimeout` internally uses a 32b integer to
+    * represent the delay, which means it cannot exceed roughly 24 days. We
+    * need to decide whether send the reminder to the channel or wait longer
+    * by calling `setTimeout` again
+    */
+    const remainding_delay_ms = date.getTime() - Date.now();
+    if (remainding_delay_ms < 2000) {
+        // we're less than 2s from the intended date, send the reminder
+        channel.send(`${user} : ${message}`);
+        RemindersFile.removeReminder(saveFileId);
+    } else {
+        // we were probably woken up too early, go back to sleep
+        console.log(`rappel n°${saveFileId}, il reste ${remainding_delay_ms}ms, je me recouche`);
+        const new_timeout = setTimeout(
+            remind, 
+            capDelayForSetTimeout(remainding_delay_ms),
+            user,
+            message,
+            date,
+            saveFileId,
+            channel
+        );
+        // the timeout id just changed for this reminder, set it to the
+        // RemindersFile's class translation table
+        RemindersFile.SAVEID_TO_TIMEOUT.set(saveFileId, new_timeout);
+    }
+}
+
 /**
  * Functions to handle the global file that saves the currently running reminders.
  *
@@ -22,6 +58,8 @@ export function formatReminderData(data: ReminderSerializeData, dateFormater: In
  */
 export class RemindersFile {
     static FILENAME = "reminders.json";
+
+    static SAVEID_TO_TIMEOUT: Map<number, NodeJS.Timeout> = new Map();
 
     /**
      * Write the given reminder data to the save file.
@@ -154,11 +192,6 @@ export class Command extends Hector.Command {
         }
     }
 
-    async remind(user: Discord.User | String, message: String, saveFileId: number, channel: Discord.SendableChannels) {
-        channel.send(`${user} : ${message}`);
-        RemindersFile.removeReminder(saveFileId);
-    }
-
     /**
      * Euclidian division, returns division and remainder
      */
@@ -182,9 +215,29 @@ export class Command extends Hector.Command {
      *
      */
     async launchReminder(date: Date, user: Discord.User | String, message: String, saveFileId: number): Promise<number> {
-        const delay = date.getTime() - Date.now();
-        setTimeout(this.remind, delay, user, message, saveFileId, this.client.channel);
-        return delay;
+        if (this.client.channel === null)
+            throw "the bot's configured channel is null";
+
+        const real_delay = date.getTime() - Date.now();
+        /* XXX: `setTimeout` internally uses a 32b integer to represent the
+        * delay, which means the maximum delay is roughly 24 days. To work
+        * around this limitation, we compute the largest representable delay
+        * smaller or equal to the real one we want, and then give the actual
+        * reminder date to the `remind` function, so that it can choose to
+        * actually send the reminder to the channel, or to wait longer by
+        * calling `setTimeout` again */
+        const capped_delay = capDelayForSetTimeout(real_delay);
+        const timeout = setTimeout(
+            remind,
+            capped_delay,
+            user,
+            message,
+            date,
+            saveFileId,
+            this.client.channel
+        );
+        RemindersFile.SAVEID_TO_TIMEOUT.set(saveFileId, timeout);
+        return real_delay;
     }
 
     /**

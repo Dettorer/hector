@@ -5,6 +5,7 @@
         "checkJs": true,
         "module": "commonjs",
         "moduleResolution": "node",
+        "lib": [ "ES2024" ],
         "baseUrl": "./src/",
         "paths": { "*": [ "*" ] },
         "outDir": "dist",
