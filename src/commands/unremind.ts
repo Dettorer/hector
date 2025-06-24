@@ -1,4 +1,4 @@
-import { RemindersFile } from "./remind";
+import { RemindersFile, formatReminderData } from "./remind";
 import * as Hector from "../hector";
 import * as Discord from "discord.js";
 
@@ -31,8 +31,8 @@ export class Command extends Hector.Command {
         if (deleted_reminder === null) {
             return channel.send(`Aucun rappel n'existe avec l'identifiant ${id}`);
         } else {
-            const str_deleted_reminder = JSON.stringify(deleted_reminder);
-            return channel.send(`J'ai bien annulé le rappel suivant : ${str_deleted_reminder}`);
+            const str_deleted_reminder = formatReminderData(deleted_reminder, this.client.dateFormater);
+            return channel.send(`Ok, j'ai bien annulé le ${str_deleted_reminder}`);
         }
     }
 };

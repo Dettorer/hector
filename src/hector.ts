@@ -58,6 +58,12 @@ export class Client extends Discord.Client {
 
     textBuffer: string;
 
+    dateFormater = new Intl.DateTimeFormat("fr-FR", {
+        dateStyle: "full",
+        timeStyle: "medium",
+        timeZone: "Europe/Paris",
+    });
+
     /**
      * Creates a new Hector bot and load its configuration
      *

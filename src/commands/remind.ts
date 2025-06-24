@@ -10,6 +10,11 @@ export interface ReminderSerializeData {
     message: string;
 };
 
+export function formatReminderData(data: ReminderSerializeData, dateFormater: Intl.DateTimeFormat): string {
+    const date_str = dateFormater.format(new Date(data.date));
+    return `rappel n°${data.id} pour ${data.username}, le ${date_str}: "${data.message}"`;
+}
+
 /**
  * Functions to handle the global file that saves the currently running reminders.
  *
@@ -220,7 +225,7 @@ export class Command extends Hector.Command {
         return channel.send(
             `Ok, j'ai enregistré le rappel numéro ${saveFileId} : `
             + `je pingerai ${ping_username} avec le message "${ping_message}" à la date suivante : `
-            + `${ping_date.toString()} (dans ${human_delay})`
+            + `${this.client.dateFormater.format(ping_date)} (dans ${human_delay})`
         )
     }
 }

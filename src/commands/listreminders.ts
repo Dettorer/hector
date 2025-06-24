@@ -1,4 +1,4 @@
-import { RemindersFile } from "./remind";
+import { RemindersFile, formatReminderData } from "./remind";
 import * as Hector from "../hector";
 import * as Discord from "discord.js";
 
@@ -31,10 +31,10 @@ export class Command extends Hector.Command {
             return channel.send("Aucun rappel n'est actuellement enregistré");
         }
 
-        this.client.bufferizeLine(`Il y a actuellement ${reminders.length} rappels à venir :`)
+        const reminder_count = `${reminders.length} rappel` + (reminders.length > 1 ? "s" : "");
+        this.client.bufferizeLine(`Il y a actuellement ${reminder_count} à venir :`)
         for (const rem of reminders) {
-            const str_rem = JSON.stringify(rem);
-            this.client.bufferizeLine(`- ${str_rem}`); 
+            this.client.bufferizeLine(`- ${formatReminderData(rem, this.client.dateFormater)}`); 
         }
         channel.send(this.client.flushBufferToString());
     }
