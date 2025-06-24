@@ -90,7 +90,16 @@ export class Command extends Hector.Command {
     description = "envoi un rappel à la date donnée";
     usage = "{everyone|<username>} <date> <heure> <message>";
     minArgs = 4;
-    help = "La date doit être au format JJ-MM, l'heure au format hh:mm ou hh:mm:ss";
+    help = "La date doit être au format JJ-MM ou JJ-MM-AAAA, l'heure au format hh:mm ou hh:mm:ss";
+
+    parseDateTimeArg(date: string, time: string): Date {
+        const now = new Date(Date.now());
+        const date_fragments = date.split("-");
+        let [day, month, year] = [date_fragments[0], date_fragments[1], now.getFullYear()];
+        if (date_fragments.length === 3) // the user's command provided a year
+            year = +date_fragments[2];
+        return new Date(`${year}-${month}-${day}T${time}`);
+    }
 
     async init() {
         const reminders: ReminderSerializeData[] = await RemindersFile.loadFile();
@@ -208,12 +217,9 @@ export class Command extends Hector.Command {
         }
 
         // parse the date
-        const now = new Date(Date.now());
-        const [ping_day, ping_month] = args[1].split("-");
-        const date_string = `${now.getFullYear()}-${ping_month}-${ping_day}T${args[2]}`
-        const ping_date = new Date(date_string);
+        const ping_date = this.parseDateTimeArg(args[1], args[2]);
         if (ping_date.toString() == "Invalid Date") {
-            return channel.send(`Je n'ai pas compris à quelle date le rappel devait être fait`);
+            return channel.send(`Je n'ai pas compris la date à laquelle le rappel devait être fait`);
         }
 
         const ping_message = args.slice(3).join(" ");
