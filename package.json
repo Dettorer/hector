@@ -26,6 +26,11 @@
         "lodash": "4",
         "typescript": "5"
     },
+    "overrides": {
+        "discord.js": {
+            "undici": "^6.23"
+        }
+    },
     "scripts": {
         "tsc": "npx tsc",
         "start": "npm run tsc && cd dist && node hector.js"
